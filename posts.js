@@ -68,7 +68,7 @@ const POSTS = [
 
   <div style="margin: 20px 0;">
     <img src="images/intro-compare.jpg" alt="식품제조가공업 즉석판매제조가공업 B2B B2C 유통 범위 비교 차이점" style="width:100%; max-width:720px; border-radius:8px; display:block; margin:0 auto; box-shadow: 0 2px 12px rgba(0,0,0,.06);">
-    <p style="font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px;">▲ 판매 타겟에 따른 두 업종의 법적 유통 제한 범위 비교 인포그래픽</p>
+    <p style="font-size: 12px; color: var(--muted); text-align: center; margin-top: 6px;">▲ 판매 형태에 따른 두 업종의 비교</p>
   </div>
 
   <h3>💡 판매 대상 및 형태에 따른 업종 분리 기준</h3>
@@ -90,7 +90,7 @@ const POSTS = [
   <div style="margin: 30px 0; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border);">
     <img src="images/certificate.jpg.jpg" alt="식품제조가공업 영업등록증 대행 성공 사례 지엘행정사사무소" style="width:100%; max-width:600px; border-radius:6px; display:block; margin:0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
     <p style="font-size: 13px; color: var(--navy); font-weight: 700; text-align: center; margin-top: 10px; margin-bottom: 2px;">▲ 대행을 통해 발급 완료된 정식 식품제조가공업 영업등록증</p>
-    <p style="font-size: 11px; color: var(--muted); text-align: center; margin: 0;">(네이버 AI 브리핑 안내: 실제 성남시 중원구 제조소 현장 실사 합격 후 교부된 적법 문서 예시입니다.)</p>
+    <p style="font-size: 11px; color: var(--muted); text-align: center; margin: 0;">(실제 성남시 중원구 식품제조가공업소 현장 실사 후 교부된 영업등록증 입니다.)</p>
   </div>
 
   <h2>🙋 식품제조가공업 자주하는 질문 FAQ</h2>
