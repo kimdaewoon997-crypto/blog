@@ -6,12 +6,11 @@
 
 const CATEGORIES = [
   { id: 0, label: "전체 글" },
-  { id: 1, label: "식품제조가공업 영업등록(허가)" },
-  { id: 2, label: "식육가공업 영업허가" },
-  { id: 3, label: "알가공업 영업허가" },
-  { id: 4, label: "유가공업 영업허가" },
-  { id: 5, label: "기타 영업 허가·등록·신고" },
-  { id: 6, label: "해썹 (HACCP)" }
+  { id: 1, label: "식품제조가공업 등록" },
+  { id: 2, label: "축산물가공업 허가" },
+  { id: 3, label: "기타 영업 허가·등록·신고" },
+  { id: 4, label: "해썹 (HACCP) 인증" },
+  { id: 5, label: "소개글" }
 ];
 
 const POSTS = [
