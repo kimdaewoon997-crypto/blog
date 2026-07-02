@@ -19,8 +19,8 @@ const POSTS = [
   // ──────────────────────────────────────────────
   {
     id: 3,
-    category: 1,                           // 1번: 식품제조가공업 등록 카테고리
-    title: "식당에서 만든 반찬·소스, 온라인으로 팔고 싶다면? 즉석판매제조가공업 완전 정리",
+    category: 3,                           // 3번: 기타 영업 허가·등록·신고 카테고리
+    title: "식당에서 만든 반찬·소스, 온라인으로 팔고 싶다면? 즉석판매제조가공업 정의",
     summary: "식당이나 반찬가게를 운영하면서 온라인으로 제품을 판매하고 싶은 분들이 많습니다. 매장 내 판매와 온라인 판매 모두 가능한지, 어디까지 허용되는지 즉석판매제조가공업을 중심으로 정리합니다.",
     date: "2026-07-02",
     tags: ["즉석판매제조가공업", "즉석판매제조가공업신고", "식당온라인판매", "반찬온라인판매", "식품위생법", "식품인허가", "지엘행정사사무소"],
@@ -32,7 +32,7 @@ const POSTS = [
   <section class="intro-box" style="margin-bottom: 40px; padding: 24px 26px;">
 
     <p style="margin-bottom: 0; font-size: 15px; font-style: italic; color: #3a4a6a;">
-      "식당을 운영하고 있는데, 제가 직접 담근 김치나 만든 반찬을 온라인에서도 팔고 싶어요. 따로 허가를 받아야 하나요?"
+      "식당을 운영하고 있는데, 제가 직접 만든 김치나 반찬을 온라인에서도 팔고 싶어요. 따로 허가를 받아야 하나요?"
     </p>
 
     <p style="margin-top: 20px; margin-bottom: 0;">
@@ -40,11 +40,11 @@ const POSTS = [
     </p>
 
     <p style="margin-top: 12px; margin-bottom: 0;">
-      매장에서 손님들한테 잘 팔리는 반찬, 직접 개발한 소스, 정성껏 담근 장류를 온라인으로도 판매하고 싶은데 — 기존 음식점 영업허가증으로 그냥 팔면 되는지, 아니면 뭔가 따로 신고를 해야 하는지 헷갈리시는 거죠.
+      매장에서 손님들한테 잘 팔리는 반찬, 직접 개발한 소스, 정성껏 담근 김치를 온라인으로도 판매하고 싶은데 — 기존 음식점 영업으로 그냥 팔면 되는지, 아니면 뭔가 따로 허가를 받아야 하는지 헷갈리시는 거죠.
     </p>
 
     <p style="margin-top: 12px; margin-bottom: 0;">
-      결론부터 말씀드리면, <strong>음식점 영업허가만으로는 온라인 판매나 포장 판매를 할 수 없습니다.</strong>
+      결론부터 말씀드리면, <strong>음식점 영업허가만으로는 온라인 판매나 포장(진열) 판매를 할 수 없습니다.</strong>
     </p>
 
     <p style="margin-top: 12px; margin-bottom: 0;">
@@ -57,8 +57,8 @@ const POSTS = [
     <p style="margin: 0; line-height: 2.1;">
       💡 <strong>핵심 정리</strong><br>
       <br>
-      음식점 영업허가 → 매장에서 <strong>조리한 음식을 식사로 제공</strong>하는 것만 가능<br>
-      즉석판매제조가공업 신고 → 직접 만든 식품을 <strong>포장해서 판매하거나 온라인으로 판매</strong> 가능<br>
+      음식점 영업 → 매장에서 <strong>조리한 음식을 식사로 제공</strong>하는 것만 가능<br>
+      즉석판매제조가공업 → 직접 만든 식품을 <strong>포장(진열)해서 판매하거나 온라인으로 판매</strong> 가능<br>
       <br>
       <span style="font-size: 13px; color: #6b7280;">※ 다른 식당·마트에 납품하려면 식품제조가공업 등록이 별도로 필요합니다.</span>
     </p>
@@ -78,7 +78,7 @@ const POSTS = [
 
   <div class="standard-box" style="margin: 20px 0 24px; padding: 20px 24px;">
     <p style="margin: 0; font-size: 14px; color: #2a3a5a; line-height: 2.0;">
-      "식품을 제조·가공업소에서 직접 최종 소비자에게 판매하는 영업"<br>
+      "총리령에서 정하는 식품을 제조·가공업소에서 직접 최종 소비자에게 판매하는 영업"<br>
       <span style="font-size: 13px; color: #6b7280;">— 식품위생법 시행령 제21조 제5호</span>
     </p>
   </div>
@@ -88,8 +88,8 @@ const POSTS = [
   </p>
 
   <p style="margin-top: 12px;">
-    <strong>① 직접 만든다</strong> — 내가 만드는 것<br>
-    <strong>② 최종 소비자에게 판다</strong> — 개인 손님에게 직접 파는 것
+    <strong>① 제조·가공업소에서</strong> — 매장 내에서 진열 판매 또는 온라인으로 판매하는 것<br>
+    <strong>② 최종 소비자에게 판다</strong> — 영업을 목적으로하는 사람이 아닌 최종소비자에게 직접 파는 것
   </p>
 
   <p style="margin-top: 16px; margin-bottom: 32px;">
@@ -116,7 +116,7 @@ const POSTS = [
   </p>
 
   <p style="margin-top: 14px; margin-bottom: 24px;">
-    일반음식점 허가는 '식사를 제공하는 것'을 목적으로 합니다. 손님이 자리에 앉아서 드시는 음식을 파는 영업이에요. 반면 포장 판매나 온라인 판매는 '식품을 제조해서 판매하는 것'에 해당합니다. 법적으로 다른 행위입니다.
+    일반음식점 허가는 '식사를 제공하는 것'을 목적으로 합니다. 손님이 자리에 앉아서 드시는 음식을 파는 영업이에요. 반면 진열 판매나 온라인 판매는 '식품을 제조해서 포장된 제품을 판매하는 것'에 해당합니다. 법적으로 다른 행위입니다.
   </p>
 
   <div class="standard-box" style="margin: 0 0 20px; padding: 0; overflow: hidden;">
@@ -124,35 +124,30 @@ const POSTS = [
       <thead>
         <tr>
           <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center; width: 28%;">구분</th>
-          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">일반음식점 허가</th>
-          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">즉석판매제조가공업 신고</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">일반음식점 영업</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">즉석판매제조가공업</th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">목적</td>
           <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">매장에서 식사 제공</td>
-          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">직접 만든 식품을 판매</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">포장된 제품을 판매</td>
         </tr>
         <tr style="background: #f8f9fd;">
           <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">매장 내 식사 제공</td>
           <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
-          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">— (해당 없음)</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">(해당 없음)</td>
         </tr>
         <tr>
-          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">포장 판매</td>
-          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">⚠️ 단순 포장은 가능<br><span style="font-size:12px;color:#888;">단, 식품 표시 없이 판매</span></td>
-          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능<br><span style="font-size:12px;color:#888;">식품 표시 부착 후 판매</span></td>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">진열 판매</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">❌ 불가<br><span style="font-size:12px;color:#888;">
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능<br><span style="font-size:12px;color:#888;">
         </tr>
         <tr style="background: #f8f9fd;">
           <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">온라인 판매</td>
           <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">❌ 불가</td>
           <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
-        </tr>
-        <tr>
-          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center;">택배·배달 발송</td>
-          <td style="padding: 13px 16px; text-align: center; color: #3a3a3a;">❌ 불가</td>
-          <td style="padding: 13px 16px; text-align: center; color: #3a3a3a;">✅ 가능</td>
         </tr>
       </tbody>
     </table>
@@ -180,7 +175,7 @@ const POSTS = [
   <div class="standard-box" style="margin: 14px 0 28px; padding: 20px 24px;">
     <p style="margin: 0; font-size: 14px; line-height: 2.5; color: #2a3a5a;">
       <strong>· 매장 내 직접 판매</strong><br>
-      <span style="color: #555; padding-left: 14px;">내 가게 안에서 손님에게 직접 판매. 반찬 소분 판매, 포장 판매 포함.</span><br>
+      <span style="color: #555; padding-left: 14px;">내 가게 안에서 손님에게 직접 판매, 반찬 소분 판매, 진열 판매 포함.</span><br>
 
       <strong>· 스마트스토어·쿠팡·네이버쇼핑 등 온라인 판매</strong><br>
       <span style="color: #555; padding-left: 14px;">개인 소비자를 대상으로 한 온라인 쇼핑몰 판매 가능.</span><br>
@@ -236,27 +231,24 @@ const POSTS = [
   </p>
 
   <p style="margin-top: 14px; margin-bottom: 24px;">
-    온라인으로 식품을 판매하려면 신고 외에 아래 사항을 추가로 갖춰야 합니다.
+    온라인으로 식품을 판매하려면 영업 신고 외에 아래 사항을 추가로 갖춰야 합니다.
   </p>
 
   <div class="standard-box" style="margin: 0 0 20px; padding: 22px 24px;">
     <p style="margin: 0; font-size: 14px; line-height: 2.5; color: #2a3a5a;">
       <strong>① 식품 표시 기준 준수</strong><br>
-      <span style="color: #555; padding-left: 14px;">제품 포장에 식품명, 원재료명, 소비기한, 보관방법, 영업소 명칭·소재지 등을 표시해야 합니다.</span><br>
+      <span style="color: #555; padding-left: 14px;">제품 포장에 제품명, 식품유형, 원재료명, 소비기한, 보관방법, 영업소 명칭·소재지 등을 표시해야 합니다.</span><br>
 
       <strong>② 통신판매업 신고</strong><br>
       <span style="color: #555; padding-left: 14px;">온라인으로 판매하려면 관할 지자체에 통신판매업 신고를 별도로 해야 합니다. (스마트스토어, 자사몰, SNS 판매 모두 해당)</span><br>
 
-      <strong>③ 전자상거래 표시·광고 준수</strong><br>
-      <span style="color: #555; padding-left: 14px;">상품 상세 페이지에 원재료, 소비기한, 알레르기 주의사항 등 법정 표시 사항을 기재해야 합니다.</span><br>
-
-      <strong>④ 위생적인 포장·배송 관리</strong><br>
-      <span style="color: #555; padding-left: 14px;">냉장·냉동이 필요한 제품은 콜드체인 포장을 갖춰야 하며, 식품 안전을 위한 보관 기준을 준수해야 합니다.</span>
+      <strong>③ 위생적인 포장·배송 관리</strong><br>
+      <span style="color: #555; padding-left: 14px;">냉장·냉동이 필요한 제품은 보관 운송기준에 적합한 포장을 갖춰야 하며, 식품 안전을 위한 운송 기준을 준수해야 합니다.</span>
     </p>
   </div>
 
   <p style="margin-bottom: 40px;">
-    처음 온라인 판매를 시작하시는 분들이 가장 많이 놓치는 부분이 바로 <strong>식품 표시</strong>와 <strong>통신판매업 신고</strong>입니다. 즉석판매제조가공업 신고와 함께 챙겨두시면 됩니다.
+    처음 온라인 판매를 시작하시는 분들이 가장 많이 놓치는 부분이 바로 <strong>식품 표시</strong>입니다. 즉석판매제조가공업 영업 신고와 함께 꼭 확인하시기 바랍니다.
   </p>
 
 
@@ -266,15 +258,15 @@ const POSTS = [
   <div class="standard-box" style="margin: 24px 0 32px; background: #fffbf0; border: 1px solid #c8a951; padding: 22px 24px;">
     <h3 style="color: #8a6400; border-left-color: #c8a951; margin-top: 0; margin-bottom: 14px;">📌 사례 개요</h3>
     <p style="margin: 0; line-height: 2.1; font-size: 14px; color: #4a3a00;">
-      상황 : 인천에서 한식당을 운영 중이며, 직접 만든 반찬과 장류를 온라인으로도 판매하고 싶었음<br>
-      기존 허가 : 일반음식점 영업허가 보유<br>
-      고민 : 기존 허가로 온라인 판매가 가능한지, 따로 신고가 필요한지 몰랐음<br>
-      결과 : 즉석판매제조가공업 추가 신고 + 통신판매업 신고 완료 후 온라인 판매 시작
+      상황 : 인천에서 한식당을 운영 중이며, 직접 만든 반찬을 온라인으로도 판매하고 싶었음<br>
+      기존 허가 : 일반음식점 영업 신고증 보유<br>
+      고민 : 기존 음식점 영업으로 온라인 판매가 가능한지, 따로 신고가 필요한지 몰랐음<br>
+      결과 : 즉석판매제조가공업 추가 영업신고 + 통신판매업 신고 완료 후 온라인 판매 시작
     </p>
   </div>
 
   <p>
-    인천에서 한식당을 10년째 운영하시는 대표님이 상담을 요청해 오셨습니다.
+    인천에서 한식당을 운영하시는 대표님이 상담을 요청해 오셨습니다.
   </p>
 
   <p style="margin-top: 14px;">
@@ -288,28 +280,28 @@ const POSTS = [
   <div class="standard-box" style="margin: 28px 0; background: #fffbf0; border: 1px solid #c8a951; padding: 22px 24px;">
     <h3 style="color: #8a6400; border-left-color: #c8a951; margin-top: 0; margin-bottom: 14px;">💬 상담 당시 실제로 드린 말씀</h3>
     <p style="margin: 0; font-size: 14px; line-height: 2.2; color: #5a4200; font-style: italic;">
-      "음식점 허가는 매장에서 식사를 제공하는 용도입니다.<br>
-      포장 판매나 온라인 판매는 별개의 영업 행위로 보기 때문에,<br>
-      즉석판매제조가공업을 추가로 신고하셔야 합니다.<br>
+      "음식점 영업은 매장에서 식사를 제공하는 업종입니다.<br>
+      매장 내 진열 판매나 온라인 판매는 별개의 영업 행위로 보기 때문에,<br>
+      즉석판매제조가공업을 추가로 영업 신고하셔야 합니다.<br>
       <br>
-      기존 음식점 허가는 그대로 두고, 즉석판매제조가공업을 추가 신고하는 방식이라<br>
+      기존 음식점 영업은 그대로 두고, 즉석판매제조가공업을 추가 영업 신고하는 방식이라<br>
       어렵지 않습니다. 온라인 판매를 위한 통신판매업 신고도 함께 진행하시면<br>
       바로 스마트스토어나 SNS에서 판매를 시작하실 수 있습니다."
     </p>
   </div>
 
   <p>
-    이후 즉석판매제조가공업 신고와 통신판매업 신고를 함께 진행했습니다.
+    이후 즉석판매제조가공업 영업 신고를 진행했습니다.
   </p>
 
   <p style="margin-top: 14px;">
-    신고 완료 후 스마트스토어를 개설하고, 현재는 매장 영업과 온라인 판매를 병행하고 계십니다. 매장에서 팔던 반찬이 온라인에서도 꾸준히 판매되고 있다고 하셨습니다.
+    영업 신고 완료 후 스마트스토어를 개설하고, 현재는 매장 영업과 온라인 판매를 병행하고 계십니다. 매장에서 팔던 반찬이 온라인에서도 꾸준히 판매되고 있다고 하셨습니다.
   </p>
 
   <div style="background: #f0f4ff; border-left: 4px solid #1a2e5a; border-radius: 0 8px 8px 0; padding: 18px 22px; font-size: 14px; color: #2a3a5a; margin: 28px 0 52px; line-height: 2.1;">
     <strong>✅ 진행 결과</strong><br>
     기존 영업 : 일반음식점 (유지)<br>
-    추가 신고 : 즉석판매제조가공업 신고 완료<br>
+    추가 신고 : 즉석판매제조가공업 영업 신고 완료<br>
     부가 신고 : 통신판매업 신고 완료<br>
     판매 채널 : 매장 판매 + 스마트스토어 온라인 판매 병행
   </div>
@@ -328,20 +320,11 @@ const POSTS = [
   <div class="faq-box" style="margin-top: 24px; margin-bottom: 48px;">
 
     <div class="faq-item">
-      <p class="faq-q">배달의민족·쿠팡이츠에서 반찬 포장 메뉴를 팔고 싶은데, 음식점 허가로는 안 되나요?</p>
+      <p class="faq-q">배달의민족·쿠팡이츠에서 반찬 메뉴를 팔고 싶은데, 음식점으로는 안 되나요?</p>
       <p class="faq-a" style="line-height: 2.0;">
-        배달앱에서 '식사 메뉴'로 파는 건 음식점 허가로 가능합니다.<br>
-        하지만 반찬·김치·소스류를 <strong>포장 상품</strong>으로 별도 판매하는 경우에는 즉석판매제조가공업 신고가 필요합니다.<br>
+        배달앱에서 '식사 메뉴'로 파는 건 음식점으로 가능합니다.<br>
+        하지만 반찬·김치·소스류를 <strong>미리 포장 한 상품</strong>으로 별도 판매하는 경우에는 즉석판매제조가공업 신고가 필요합니다.<br>
         어떤 형태로 파느냐에 따라 달라지므로, 판매 방식을 먼저 확인하시는 게 좋습니다.
-      </p>
-    </div>
-
-    <div class="faq-item">
-      <p class="faq-q">인스타그램 DM으로 주문받아서 집에서 만든 반찬을 택배로 보내는 건요?</p>
-      <p class="faq-a" style="line-height: 2.0;">
-        이 경우도 즉석판매제조가공업 신고가 필요합니다.<br>
-        판매 규모나 채널에 관계없이 직접 만든 식품을 판매하는 행위 자체에 신고 의무가 있습니다.<br>
-        신고 없이 판매하다 적발되면 과태료 처분을 받을 수 있으니, 소규모라도 신고를 먼저 하시는 게 안전합니다.
       </p>
     </div>
 
@@ -355,7 +338,7 @@ const POSTS = [
     </div>
 
     <div class="faq-item" style="margin-bottom: 0;">
-      <p class="faq-q">즉석판매제조가공업 신고 후 바로 온라인 판매를 시작할 수 있나요?</p>
+      <p class="faq-q">즉석판매제조가공업 영업 신고 후 바로 온라인 판매를 시작할 수 있나요?</p>
       <p class="faq-a" style="line-height: 2.0;">
         즉석판매제조가공업 신고 외에 <strong>통신판매업 신고</strong>를 함께 하셔야 합니다.<br>
         또한 제품 포장에 식품 표시 사항(원재료, 소비기한, 영업소 정보 등)을 갖춰야 판매가 가능합니다.<br>
@@ -368,7 +351,7 @@ const POSTS = [
 
   <!-- CTA -->
   <div class="cta-box" style="padding: 36px 24px;">
-    <p class="cta-title">🏪 즉석판매제조가공업 신고 · 온라인 판매 인허가, 처음부터 함께합니다</p>
+    <p class="cta-title">🏪 즉석판매제조가공업 영업 신고 · 온라인 판매 인허가, 처음부터 함께합니다</p>
     <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
     <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
     <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
