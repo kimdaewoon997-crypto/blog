@@ -240,10 +240,10 @@ const POSTS = [
       <span style="color: #555; padding-left: 14px;">제품 포장에 제품명, 식품유형, 원재료명, 소비기한, 보관방법, 영업소 명칭·소재지 등을 표시해야 합니다.</span><br>
 
       <strong>② 통신판매업 신고</strong><br>
-      <span style="color: #555; padding-left: 14px;">온라인으로 판매하려면 관할 지자체에 통신판매업 신고를 별도로 해야 합니다. (스마트스토어, 자사몰, SNS 판매 모두 해당)</span><br>
+      <span style="color: #555; padding-left: 14px;">온라인으로 판매하려면 관할 지자체에 통신판매업 신고를 별도로 해야 합니다. (자사몰, SNS 판매 모두 해당)</span><br>
 
       <strong>③ 위생적인 포장·배송 관리</strong><br>
-      <span style="color: #555; padding-left: 14px;">냉장·냉동이 필요한 제품은 보관 운송기준에 적합한 포장을 갖춰야 하며, 식품 안전을 위한 운송 기준을 준수해야 합니다.</span>
+      <span style="color: #555; padding-left: 14px;">냉장·냉동 제품은 보관 운송기준에 적합한 포장을 갖춰야 하며, 식품 안전을 위한 운송 기준을 준수해야 합니다.</span>
     </p>
   </div>
 
