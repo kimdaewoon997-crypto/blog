@@ -15,6 +15,400 @@ const CATEGORIES = [
 
 const POSTS = [
   // ──────────────────────────────────────────────
+  //  POST 3  |  즉석판매제조가공업 정의 (수원 반찬가게 사례)
+  // ──────────────────────────────────────────────
+  {
+    id: 3,
+    category: 1,                           // 1번: 식품제조가공업 등록 카테고리
+    title: "즉석판매제조가공업이란? 반찬가게·카페·델리 창업 전에 꼭 확인하세요",
+    summary: "즉석판매제조가공업은 직접 만든 식품을 내 영업장 안에서 손님에게 바로 파는 업종입니다. 식품제조가공업과 무엇이 다른지, 어떤 경우에 해당하는지 수원 반찬가게 사례와 함께 정리했습니다.",
+    date: "2026-07-02",
+    tags: ["즉석판매제조가공업", "즉석판매제조가공업신고", "식품위생법", "반찬가게창업", "카페창업", "식품인허가", "지엘행정사사무소"],
+    thumbnail: "",
+    body: `
+<article class="post-body" style="line-height: 2.2; letter-spacing: -0.02em; font-size: 15px;">
+
+  <!-- 도입부 -->
+  <section class="intro-box" style="margin-bottom: 40px; padding: 24px 26px;">
+
+    <p style="margin-bottom: 0; font-size: 15px; font-style: italic; color: #3a4a6a;">
+      "반찬을 직접 만들어서 가게에서 팔려고 하는데, 무슨 허가를 받아야 하나요?"
+    </p>
+
+    <p style="margin-top: 20px; margin-bottom: 0;">
+      창업 상담에서 자주 받는 질문 중 하나입니다.
+    </p>
+
+    <p style="margin-top: 12px; margin-bottom: 0;">
+      반찬가게, 베이커리 카페, 델리 코너, 샐러드 전문점처럼 <strong>직접 만든 것을 바로 파는 형태</strong>의 사업을 준비하신다면, 대부분 이 업종이 해당됩니다.
+    </p>
+
+    <p style="margin-top: 12px; margin-bottom: 0;">
+      바로 <strong>즉석판매제조가공업</strong>입니다.
+    </p>
+
+    <p style="margin-top: 12px; margin-bottom: 0;">
+      이름이 길고 낯설어서 어렵게 느껴지시는 분들이 많은데요.<br>
+      <strong>핵심 개념은 생각보다 간단합니다.</strong> 지금부터 차근차근 풀어드리겠습니다.
+    </p>
+
+  </section>
+
+  <div class="standard-box" style="margin-bottom: 48px;">
+    <p style="margin: 0; line-height: 2.0;">
+      💡 <strong>핵심 한 줄 정리</strong><br>
+      <br>
+      내가 직접 만들고, <strong>내 영업장 안에서 바로 손님에게 판매</strong>한다면 → <strong>즉석판매제조가공업</strong><br>
+      만든 제품을 다른 가게·마트에 납품한다면 → <strong>식품제조가공업</strong> (별도 등록 필요)
+      <br><br>
+      <span style="font-size: 13px; color: #6b7280;">※ 납품이 목적이라면 즉석판매제조가공업으로는 원칙적으로 불가합니다. 아래에서 자세히 설명합니다.</span>
+    </p>
+  </div>
+
+
+  <!-- 섹션 1: 법적 정의 -->
+  <h2>1. 즉석판매제조가공업이란? – 법적 정의</h2>
+
+  <p style="margin-top: 20px;">
+    <strong>즉석판매제조가공업</strong>은 「식품위생법 시행령」 제21조에 따라 <strong>신고</strong>를 하고 운영하는 영업입니다.
+  </p>
+
+  <p style="margin-top: 16px;">
+    법령상 정의는 이렇습니다.
+  </p>
+
+  <div class="standard-box" style="margin: 20px 0 24px; padding: 20px 24px;">
+    <p style="margin: 0; font-size: 14px; color: #2a3a5a; line-height: 2.0;">
+      "식품을 제조·가공업소에서 직접 최종 소비자에게 판매하는 영업"<br>
+      <span style="font-size: 13px; color: #6b7280;">— 식품위생법 시행령 제21조 제5호</span>
+    </p>
+  </div>
+
+  <p>
+    풀어서 말씀드리면 이렇습니다.
+  </p>
+
+  <p style="margin-top: 12px;">
+    내가 직접 식품을 만들고, <strong>그 자리에서 바로 손님(최종 소비자)에게 파는 것</strong>입니다.
+  </p>
+
+  <p style="margin-top: 12px; margin-bottom: 32px;">
+    반찬가게에서 직접 무친 나물을 100g씩 담아 파는 것, 카페에서 직접 구운 케이크를 진열해 파는 것, 델리 코너에서 만든 샐러드를 도시락 형태로 판매하는 것 — 이런 형태가 모두 여기에 해당합니다.
+  </p>
+
+  <!-- 이미지 자리 1 -->
+  <div style="margin: 36px 0; background: #f8fafc; border: 1.5px dashed #c8d0e0; border-radius: 10px; padding: 40px 20px; text-align: center; color: #8a96b0; font-size: 14px; line-height: 2.0;">
+    <p style="font-size: 24px; margin-bottom: 10px;">🖼️</p>
+    <p style="font-weight: 700; color: #4a5580; font-size: 15px; margin-bottom: 6px;">이미지 삽입 위치 : 즉석판매제조가공업 업종 예시 사진</p>
+    <p style="margin: 0;">반찬가게 진열 모습, 베이커리 카페, 델리 코너 등 대표 업종 이미지<br>※ 핵심 정보는 위 본문에 텍스트로 병기되어 있습니다.</p>
+  </div>
+
+
+  <!-- 섹션 2: 허가 vs 신고 -->
+  <h2>2. 허가가 아니라 '신고'입니다 – 절차가 훨씬 간단합니다</h2>
+
+  <p style="margin-top: 20px;">
+    즉석판매제조가공업의 중요한 특징 중 하나는 <strong>허가가 아닌 신고 업종</strong>이라는 점입니다.
+  </p>
+
+  <p style="margin-top: 12px;">
+    식품제조가공업은 관할 지자체에 <strong>영업등록</strong>을 해야 하고, 현장 조사와 서류 검토에 시간이 걸립니다.
+  </p>
+
+  <p style="margin-top: 12px; margin-bottom: 28px;">
+    반면 즉석판매제조가공업은 시설 기준만 갖추면 <strong>관할 지자체(구청·시청)에 신고</strong>하는 것으로 영업을 시작할 수 있습니다. 절차가 상대적으로 간단하고 빠릅니다.
+  </p>
+
+  <div class="standard-box" style="margin: 0 0 48px; padding: 20px 24px;">
+    <p style="margin: 0; font-size: 14px; line-height: 2.2; color: #2a3a5a;">
+      📋 <strong>신고 시 필요한 주요 서류 (일반적 기준)</strong><br>
+      <br>
+      · 영업신고서<br>
+      · 건강진단결과서 (영업자 본인)<br>
+      · 식품위생교육 이수증<br>
+      · 교육 이수 전 영업 개시 시, 개시 후 1개월 이내 이수 가능<br>
+      <br>
+      <span style="font-size: 13px; color: #6b7280;">※ 지자체별로 추가 서류가 있을 수 있으므로, 관할 구청에 사전 확인을 권장합니다.</span>
+    </p>
+  </div>
+
+
+  <!-- 섹션 3: 판매 범위 – 핵심 제한사항 -->
+  <h2>3. 어디까지 팔 수 있나요? – 판매 범위가 핵심입니다</h2>
+
+  <p style="margin-top: 20px;">
+    즉석판매제조가공업에서 가장 중요하게 알아두셔야 할 부분입니다.
+  </p>
+
+  <p style="margin-top: 12px;">
+    이 업종은 <strong>내 영업장 안에서, 직접 만든 제품을, 최종 소비자에게 판매</strong>하는 것이 원칙입니다.
+  </p>
+
+  <p style="margin-top: 12px; margin-bottom: 24px;">
+    구체적으로 어디까지 가능하고, 어디서부터 안 되는지 정리해 드립니다.
+  </p>
+
+  <div class="standard-box" style="margin: 0 0 20px; padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.9;">
+      <thead>
+        <tr>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center; width: 30%;">판매 형태</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center; width: 20%;">가능 여부</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: left;">설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">영업장 내 직접 판매</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">가게 안에서 손님에게 직접 판매</td>
+        </tr>
+        <tr style="background: #f8f9fd;">
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">온라인 판매 (개인 소비자)</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">스마트스토어·인스타 등 개인 소비자 대상 판매</td>
+        </tr>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">택배·배달 (개인 소비자)</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">주문 받아 택배·배달 발송 가능</td>
+        </tr>
+        <tr style="background: #f8f9fd;">
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">식당·마트 등 납품 (B2B)</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">❌ 원칙적 불가</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">다른 영업자에게 판매·납품 불가</td>
+        </tr>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center;">과자·빵·떡류 일부 유통</td>
+          <td style="padding: 13px 16px; text-align: center; color: #3a3a3a;">⚠️ 조건부 가능</td>
+          <td style="padding: 13px 16px; color: #3a3a3a;">당일 제조·판매 조건으로 예외 허용</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="standard-box" style="margin: 24px 0 48px;">
+    <p style="margin: 0; line-height: 2.0;">
+      📌 <strong>납품이 목적이라면 즉석판매제조가공업만으로는 부족합니다.</strong><br><br>
+      식당, 프랜차이즈 가맹점, 마트, 도매상 등 <strong>다른 영업자에게 납품하려면 식품제조가공업 등록</strong>이 별도로 필요합니다.<br>
+      납품까지 계획하고 있다면, 처음부터 식품제조가공업으로 준비하는 것이 훨씬 유리합니다.
+    </p>
+  </div>
+
+
+  <!-- 섹션 4: 해당 업종 예시 -->
+  <h2>4. 어떤 업종이 해당되나요? – 대표 업종 예시</h2>
+
+  <p style="margin-top: 20px; margin-bottom: 24px;">
+    즉석판매제조가공업으로 신고하는 대표적인 업종들입니다.
+  </p>
+
+  <div class="standard-box" style="margin: 0 0 20px; padding: 22px 24px;">
+    <p style="margin: 0 0 16px; font-weight: 700; color: #1a2e5a; font-size: 14px;">✅ 즉석판매제조가공업에 해당하는 업종 예시</p>
+    <p style="margin: 0; font-size: 14px; line-height: 2.4; color: #3a3a3a;">
+      · <strong>반찬가게</strong> : 직접 조리한 나물·조림·볶음류 등을 100g, 200g 단위로 판매<br>
+      · <strong>베이커리·제과점</strong> : 직접 구운 빵·케이크·쿠키를 진열 판매<br>
+      · <strong>샐러드·도시락 전문점</strong> : 직접 만든 샐러드·도시락을 포장 판매<br>
+      · <strong>수제 음료·디저트 카페</strong> : 직접 만든 잼·청·음료·디저트 판매<br>
+      · <strong>김밥·분식류</strong> : 즉석에서 만들어 포장 판매하는 형태<br>
+      · <strong>정육점 내 가공 코너</strong> : 직접 만든 양념육·제육볶음 양념 소분 판매
+    </p>
+  </div>
+
+  <p style="margin-bottom: 32px;">
+    공통점은 하나입니다. <strong>내가 직접 만들고, 내 가게에서 바로 손님에게 파는 것</strong>이라면 대부분 이 업종에 해당합니다.
+  </p>
+
+  <!-- 이미지 자리 2 -->
+  <div style="margin: 36px 0; background: #f8fafc; border: 1.5px dashed #c8d0e0; border-radius: 10px; padding: 40px 20px; text-align: center; color: #8a96b0; font-size: 14px; line-height: 2.0;">
+    <p style="font-size: 24px; margin-bottom: 10px;">🖼️</p>
+    <p style="font-weight: 700; color: #4a5580; font-size: 15px; margin-bottom: 6px;">이미지 삽입 위치 : 즉석판매제조가공업 대표 업종 예시 사진</p>
+    <p style="margin: 0;">반찬 진열대, 베이커리 쇼케이스, 샐러드 도시락 포장 등 이미지<br>※ 핵심 정보는 위 본문에 텍스트로 병기되어 있습니다.</p>
+  </div>
+
+
+  <!-- 섹션 5: 식품제조가공업과 한 줄 비교 -->
+  <h2>5. 식품제조가공업과 한눈에 비교</h2>
+
+  <p style="margin-top: 20px; margin-bottom: 24px;">
+    두 업종이 헷갈리는 분들을 위해 핵심 차이만 정리했습니다.
+  </p>
+
+  <div class="standard-box" style="margin: 0 0 28px; padding: 0; overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.9;">
+      <thead>
+        <tr>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center; width: 26%;">구분</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">즉석판매제조가공업</th>
+          <th style="background: #1a2e5a; color: #fff; padding: 13px 16px; text-align: center;">식품제조가공업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">법적 절차</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;"><strong>신고</strong></td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;"><strong>등록</strong></td>
+        </tr>
+        <tr style="background: #f8f9fd;">
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">판매 대상</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">최종 소비자에게 직접 판매</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">소비자 직판 + 다른 업체 납품(B2B) 모두 가능</td>
+        </tr>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">납품 가능 여부</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">❌ 원칙적 불가</td>
+          <td style="padding: 13px 16px; text-align: center; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">✅ 가능</td>
+        </tr>
+        <tr style="background: #f8f9fd;">
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center; border-bottom: 1px solid #e8ecf5;">시설 기준</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">상대적으로 간소</td>
+          <td style="padding: 13px 16px; border-bottom: 1px solid #e8ecf5; color: #3a3a3a;">작업장·창고 등 별도 기준 충족 필요</td>
+        </tr>
+        <tr>
+          <td style="padding: 13px 16px; background: #f0f4ff; font-weight: 700; color: #1a2e5a; text-align: center;">처리 기간</td>
+          <td style="padding: 13px 16px; text-align: center; color: #3a3a3a;">비교적 빠름</td>
+          <td style="padding: 13px 16px; text-align: center; color: #3a3a3a;">현장 조사 포함 수주~수개월</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="standard-box" style="margin: 0 0 48px;">
+    <p style="margin: 0; line-height: 2.0;">
+      📌 <strong>어떤 업종을 선택해야 할지 모르겠다면, 판매 대상을 먼저 생각해 보세요.</strong><br><br>
+      내 가게 손님에게만 판다 → <strong>즉석판매제조가공업</strong><br>
+      식당·마트 등 다른 사업자에게도 판다 → <strong>식품제조가공업</strong>
+    </p>
+  </div>
+
+
+  <!-- 섹션 6: 실제 사례 -->
+  <h2>6. 실제 사례 – 수원에서 반찬가게를 준비하던 의뢰인 이야기</h2>
+
+  <div class="standard-box" style="margin: 24px 0 32px; background: #fffbf0; border: 1px solid #c8a951; padding: 22px 24px;">
+    <h3 style="color: #8a6400; border-left-color: #c8a951; margin-top: 0; margin-bottom: 14px;">📌 사례 개요</h3>
+    <p style="margin: 0; line-height: 2.1; font-size: 14px; color: #4a3a00;">
+      업종 목적 : 직접 만든 반찬을 가게에서 소분 판매<br>
+      위치 : 경기도 수원<br>
+      고민 : 식품제조가공업 등록이 필요한지, 즉석판매제조가공업 신고로 충분한지 몰랐음<br>
+      결과 : 즉석판매제조가공업 신고 완료, 정상 영업 중
+    </p>
+  </div>
+
+  <p>
+    경기도 수원에서 반찬가게 창업을 준비하던 의뢰인이 상담을 요청해 오셨습니다.
+  </p>
+
+  <p style="margin-top: 14px;">
+    직접 나물을 무치고, 조림·볶음류를 만들어서 가게에서 100g·200g 단위로 소분해 판매하는 형태였습니다. 주변에서 "식품 만들어서 팔면 허가 받아야 한다"는 말을 듣고 오셨는데, 어떤 허가인지는 몰라 막막해하셨습니다.
+  </p>
+
+  <p style="margin-top: 14px;">
+    상담에서 저희가 먼저 확인한 것은 두 가지였습니다.
+  </p>
+
+  <p style="margin-top: 14px;">
+    <strong>첫째, 누구에게 파는지.</strong> 가게를 찾아오는 손님에게 직접 파는 것이고, 납품 계획은 없었습니다.<br>
+    <strong>둘째, 어디서 만들고 파는지.</strong> 가게 내 주방에서 직접 조리하고, 같은 공간에서 판매하는 구조였습니다.
+  </p>
+
+  <p style="margin-top: 14px;">
+    두 가지를 확인하고 나니 답이 명확했습니다.
+  </p>
+
+  <div class="standard-box" style="margin: 28px 0; background: #fffbf0; border: 1px solid #c8a951; padding: 22px 24px;">
+    <h3 style="color: #8a6400; border-left-color: #c8a951; margin-top: 0; margin-bottom: 14px;">💬 상담 당시 실제로 드린 말씀</h3>
+    <p style="margin: 0; font-size: 14px; line-height: 2.1; color: #5a4200; font-style: italic;">
+      "지금 계획하신 형태는 즉석판매제조가공업으로 신고하시면 됩니다.<br>
+      식품제조가공업처럼 별도 등록이 아니라, 관할 구청에 신고하는 절차입니다.<br>
+      <br>
+      다만, 나중에 다른 식당이나 급식 업체에 반찬을 납품할 계획이 생기면<br>
+      그때는 식품제조가공업 등록이 추가로 필요합니다.<br>
+      지금 단계에서 납품 계획이 없으시다면, 즉석판매제조가공업으로 진행하시는 게 맞습니다."
+    </p>
+  </div>
+
+  <p>
+    이후 가게 시설을 확인하고 식품위생교육을 이수하신 뒤, 관할 구청에 즉석판매제조가공업 신고를 완료하셨습니다.
+  </p>
+
+  <p style="margin-top: 14px; margin-bottom: 32px;">
+    어렵게만 느껴지셨던 창업 첫 단계가 생각보다 간단하게 해결됐다며 안도하셨습니다.
+  </p>
+
+  <div style="background: #f0f4ff; border-left: 4px solid #1a2e5a; border-radius: 0 8px 8px 0; padding: 18px 22px; font-size: 14px; color: #2a3a5a; margin: 0 0 52px; line-height: 2.1;">
+    <strong>✅ 진행 결과</strong><br>
+    업종 : 즉석판매제조가공업<br>
+    품목 : 반찬류 (나물, 조림, 볶음 등)<br>
+    소재지 : 경기도 수원<br>
+    → 식품위생교육 이수 + 즉석판매제조가공업 신고 완료
+  </div>
+
+  <!-- 이미지 자리 3 -->
+  <div style="margin: 36px 0; background: #f8fafc; border: 1.5px dashed #c8d0e0; border-radius: 10px; padding: 40px 20px; text-align: center; color: #8a96b0; font-size: 14px; line-height: 2.0;">
+    <p style="font-size: 24px; margin-bottom: 10px;">🖼️</p>
+    <p style="font-weight: 700; color: #4a5580; font-size: 15px; margin-bottom: 6px;">이미지 삽입 위치 : 즉석판매제조가공업 신고증 예시</p>
+    <p style="margin: 0;">실제 신고 완료 후 발급된 영업신고증 또는 신고증 사진<br>※ 개인정보 보호를 위해 의뢰인 정보는 비공개 처리합니다.</p>
+  </div>
+
+
+  <!-- FAQ -->
+  <h2>🙋 자주 묻는 질문 (FAQ)</h2>
+
+  <div class="faq-box" style="margin-top: 24px; margin-bottom: 48px;">
+
+    <div class="faq-item">
+      <p class="faq-q">인스타그램에서 주문받아 택배로 보내는 것도 가능한가요?</p>
+      <p class="faq-a" style="line-height: 2.0;">
+        네, 가능합니다.<br>
+        최종 소비자(개인)에게 직접 판매하고 배송하는 것은 즉석판매제조가공업의 범위에 포함됩니다.<br>
+        다만 식품 표시 기준(원재료, 소비기한 등 표기)은 반드시 지켜야 합니다.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">카페에서 직접 만든 케이크나 마카롱을 팔아도 신고해야 하나요?</p>
+      <p class="faq-a" style="line-height: 2.0;">
+        카페는 일반적으로 일반음식점 또는 휴게음식점으로 신고합니다.<br>
+        그런데 <strong>직접 만든 제품을 포장해서 판매</strong>하는 경우, 즉석판매제조가공업 신고를 추가로 해야 할 수 있습니다.<br>
+        카페 업종과 판매 형태를 같이 확인해야 하므로, 개별 상담을 통해 정확히 파악하시는 것을 권장합니다.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">처음에 즉석판매제조가공업으로 시작했다가 나중에 납품도 하고 싶으면요?</p>
+      <p class="faq-a" style="line-height: 2.0;">
+        즉석판매제조가공업 신고와 별도로 <strong>식품제조가공업 등록</strong>을 추가해야 합니다.<br>
+        두 업종을 동시에 운영하는 것도 가능하지만, 시설 기준 등을 별도로 갖춰야 합니다.<br>
+        납품까지 처음부터 계획하고 계신다면, 초기부터 식품제조가공업으로 준비하는 것이 더 효율적입니다.
+      </p>
+    </div>
+
+    <div class="faq-item" style="margin-bottom: 0;">
+      <p class="faq-q">즉석판매제조가공업 신고만 하면 모든 식품을 만들어 팔 수 있나요?</p>
+      <p class="faq-a" style="line-height: 2.0;">
+        제조·판매할 수 있는 식품의 종류나 가공 방법에 따라 추가 요건이 있을 수 있습니다.<br>
+        예를 들어 주류를 제조하거나, 특수 가공이 필요한 제품을 만드는 경우에는 별도의 허가·신고가 필요할 수 있습니다.<br>
+        준비 중인 제품 목록을 미리 확인하고 상담받으시는 것을 권장합니다.
+      </p>
+    </div>
+
+  </div>
+
+
+  <!-- CTA -->
+  <div class="cta-box" style="padding: 36px 24px;">
+    <p class="cta-title">🏪 즉석판매제조가공업 신고 · 식품 창업 인허가, 처음부터 함께합니다</p>
+    <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
+    <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
+    <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
+  </div>
+
+</article>
+    `
+  },
+
+  // ──────────────────────────────────────────────
   //  POST 2  |  식육가공업 정의 및 식육포장처리업 비교 (인천 염지 닭 사례)
   // ──────────────────────────────────────────────
   {
