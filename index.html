@@ -618,45 +618,70 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin: 0 0 0 12px;
-      padding: 6px 14px;
+      position: fixed;
+      right: 20px;
+      bottom: 90px;
+      z-index: 260;
+      padding: 10px 16px;
       background: var(--navy);
       color: #fff;
       border: none;
-      border-radius: 6px;
+      border-radius: 24px;
       font-size: 13px;
       font-family: inherit;
       cursor: pointer;
-      opacity: 0.75;
-      transition: opacity .15s;
+      box-shadow: 0 4px 14px rgba(0,0,0,.28);
+      opacity: 0.92;
+      transition: opacity .15s, transform .15s;
     }
-    #img-manager-toggle:hover { opacity: 1; }
+    #img-manager-toggle:hover { opacity: 1; transform: translateY(-1px); }
+
+    #img-manager-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 390;
+    }
+    #img-manager-overlay.open { display: block; }
 
     #img-manager {
       display: none;
+      position: fixed;
+      top: 0;
+      right: -360px;
+      width: 340px;
+      max-width: 92vw;
+      height: 100dvh;
+      overflow-y: auto;
       background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border: none;
+      border-left: 1.5px solid var(--border);
+      border-radius: 0;
       padding: 20px;
-      margin: 16px 0 24px;
+      margin: 0;
+      z-index: 400;
+      box-shadow: -6px 0 24px rgba(0,0,0,.18);
+      transition: right .25s ease;
     }
-    #img-manager.open { display: block; }
+    #img-manager.open { display: block; right: 0; }
 
     .img-manager-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
     }
     .img-manager-head h3 {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--navy);
     }
     .img-manager-close {
       background: none;
       border: none;
-      font-size: 18px;
+      font-size: 20px;
       cursor: pointer;
       color: var(--muted);
       line-height: 1;
@@ -828,6 +853,7 @@
     @media (max-width: 600px) {
       .img-slot-header { flex-direction: column; align-items: flex-start; }
       .img-slot-actions { margin-top: 6px; }
+      #img-manager-toggle { right: 12px; bottom: 76px; padding: 9px 14px; font-size: 12px; }
     }
   </style>
 </head>
@@ -929,6 +955,31 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
+     이미지 관리자 (토글 버튼 · 패널 · 잠금모달)
+═══════════════════════════════════════════ -->
+<button id="img-manager-toggle" onclick="openImgManager()">🖼️ 이미지 관리</button>
+
+<div id="img-manager-overlay" onclick="closeImgManager()"></div>
+<div id="img-manager">
+  <div class="img-manager-head">
+    <h3>🖼️ 이미지 관리자</h3>
+    <button class="img-manager-close" onclick="closeImgManager()">✕</button>
+  </div>
+  <div id="img-manager-body"></div>
+</div>
+
+<div id="img-lock-modal">
+  <div class="img-lock-box">
+    <h3>🔒 이미지 관리자</h3>
+    <p>관리자 암호를 입력하세요</p>
+    <input type="password" id="img-lock-input" placeholder="암호" />
+    <button class="img-lock-btn" onclick="checkImgLock()">확인</button>
+    <button class="img-lock-cancel" onclick="closeImgLock()">취소</button>
+    <p class="img-lock-error" id="img-lock-error">암호가 올바르지 않습니다.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      SCRIPTS
 ═══════════════════════════════════════════ -->
 <script src="posts.js"></script>
@@ -966,6 +1017,14 @@ function init() {
   // keyboard search
   document.getElementById('search-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') doSearch();
+  });
+
+  // 이미지 맵 로드 (GitHub에 저장된 실제 이미지 정보를 불러와 화면에 반영)
+  loadImageMap();
+
+  // 잠금 모달 엔터키 처리
+  document.getElementById('img-lock-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkImgLock();
   });
 }
 
@@ -1075,7 +1134,7 @@ function renderList() {
 
     return `
       <div class="post-card" onclick="openPost(${post.id})">
-        <div class="post-thumb">${thumbHtml}</div>
+        <div class="post-thumb" data-thumb-slot="thumb-${post.id}">${thumbHtml}</div>
         <div class="post-info">
           <span class="post-cat-tag">${escHtml(catLabel)}</span>
           <p class="post-card-title">${escHtml(post.title)}</p>
@@ -1087,6 +1146,8 @@ function renderList() {
         </div>
       </div>`;
   }).join('');
+
+  applyImageSlots();
 }
 
 /* ─────────────────────────────────────────────
@@ -1121,6 +1182,12 @@ function openPost(postId, pushHistory = true) {
   updateMeta(post.title + ' | 지엘행정사사무소', post.summary);
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  applyImageSlots();
+  // 이미지 관리 패널이 열려 있다면 새 글에 맞춰 슬롯 목록을 다시 그림
+  if (document.getElementById('img-manager').classList.contains('open')) {
+    renderImgManagerBody();
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -1238,6 +1305,314 @@ function escHtml(str) {
   return String(str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   이미지 관리자 (GitHub 저장소 연동)
+   ─────────────────────────────────────────────────────────
+   동작 원리
+   1) 업로드한 이미지는 이 저장소(repo)의 images/ 폴더에 실제로
+      저장되고, image-map.json 파일에 "슬롯이름 → 이미지주소"가
+      기록됩니다. 즉 브라우저 저장(localStorage)이 아니라 GitHub
+      저장소 자체에 저장되므로, 홈페이지에 방문하는 모든 사람에게
+      동일하게 이미지가 보입니다.
+   2) 최초 1회, 우측 패널 하단의 "GitHub 연동 설정"에서
+      - GitHub 계정명(owner)
+      - 저장소 이름(repo)
+      - 브랜치명(보통 main)
+      - Personal Access Token (repo 쓰기 권한 필요)
+      를 입력해두면 그 다음부터는 업로드 버튼만 누르면 됩니다.
+   3) 암호창은 아무나 이미지가 바뀌지 않도록 막는 간단한 잠금
+      장치입니다. 아래 IMG_LOCK_PASSWORD 값을 원하는 암호로
+      바꿔서 사용하세요.
+═══════════════════════════════════════════════════════════ */
+
+const IMG_LOCK_PASSWORD = "gladmin1234"; // ← 원하는 암호로 변경하세요
+
+let ghConfig = JSON.parse(localStorage.getItem('gh_config') || 'null');
+let imageMap = {};
+let imgManagerUnlocked = sessionStorage.getItem('img_unlocked') === '1';
+
+/* ── 이미지 맵 로드 & 화면 반영 ── */
+async function loadImageMap() {
+  try {
+    const res = await fetch('./image-map.json?t=' + Date.now(), { cache: 'no-store' });
+    if (res.ok) {
+      imageMap = await res.json();
+    } else {
+      imageMap = {};
+    }
+  } catch (e) {
+    imageMap = {};
+  }
+  applyImageSlots();
+}
+
+function applyImageSlots() {
+  // 본문 내 이미지 슬롯 (data-img-slot)
+  document.querySelectorAll('[data-img-slot]').forEach(el => {
+    const key = el.dataset.imgSlot;
+    const url = imageMap[key];
+    el.innerHTML = url ? `<img src="${url}" alt="${escHtml(key)}" loading="lazy">` : '';
+  });
+  // 목록 썸네일 (data-thumb-slot) — 이미지가 없으면 기존 아이콘/썸네일 유지
+  document.querySelectorAll('[data-thumb-slot]').forEach(el => {
+    const key = el.dataset.thumbSlot;
+    const url = imageMap[key];
+    if (url) el.innerHTML = `<img src="${url}" alt="thumbnail">`;
+  });
+}
+
+/* ── 잠금 모달 ── */
+function openImgManager() {
+  if (!imgManagerUnlocked) {
+    document.getElementById('img-lock-modal').classList.add('open');
+    document.getElementById('img-lock-input').value = '';
+    document.getElementById('img-lock-error').style.display = 'none';
+    setTimeout(() => document.getElementById('img-lock-input').focus(), 50);
+  } else {
+    showImgManagerPanel();
+  }
+}
+
+function checkImgLock() {
+  const val = document.getElementById('img-lock-input').value;
+  if (val === IMG_LOCK_PASSWORD) {
+    imgManagerUnlocked = true;
+    sessionStorage.setItem('img_unlocked', '1');
+    closeImgLock();
+    showImgManagerPanel();
+  } else {
+    document.getElementById('img-lock-error').style.display = 'block';
+  }
+}
+
+function closeImgLock() {
+  document.getElementById('img-lock-modal').classList.remove('open');
+}
+
+/* ── 패널 열기/닫기 ── */
+function showImgManagerPanel() {
+  document.getElementById('img-manager').classList.add('open');
+  document.getElementById('img-manager-overlay').classList.add('open');
+  renderImgManagerBody();
+}
+function closeImgManager() {
+  document.getElementById('img-manager').classList.remove('open');
+  document.getElementById('img-manager-overlay').classList.remove('open');
+}
+
+/* ── 패널 내용 렌더링 ── */
+function renderImgManagerBody() {
+  const body = document.getElementById('img-manager-body');
+
+  if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
+    body.innerHTML = renderGhSetupForm();
+    return;
+  }
+
+  if (state.view !== 'post' || !state.postId) {
+    body.innerHTML = `
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">
+        글 목록 화면에서는 썸네일만 관리할 수 있습니다.<br>
+        본문 이미지를 관리하려면 글을 먼저 열어주세요.
+      </p>
+      <div class="img-slot-list" style="margin-top:14px;">
+        ${renderSlotRow({ key: `thumb-all`, label: '(참고) 각 글의 썸네일', desc: '글을 열면 개별적으로 관리할 수 있습니다.' }, true)}
+      </div>
+      ${renderGhSettingsLink()}
+    `;
+    return;
+  }
+
+  const post = POSTS.find(p => p.id === state.postId);
+  const slots = [
+    { key: `thumb-${post.id}`, label: '썸네일 이미지', desc: '목록 화면에 표시되는 대표 이미지' },
+    ...(post.imageSlots || [])
+  ];
+
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+      현재 글: <strong style="color:var(--navy);">${escHtml(post.title)}</strong>
+    </p>
+    <div class="img-slot-list">
+      ${slots.map(s => renderSlotRow(s)).join('')}
+    </div>
+    ${renderGhSettingsLink()}
+  `;
+}
+
+function renderSlotRow(slot, disabled = false) {
+  const url = imageMap[slot.key];
+  return `
+    <div class="img-slot-item">
+      <div class="img-slot-header">
+        <div class="img-slot-label">${escHtml(slot.label)}<div class="img-slot-desc">${escHtml(slot.desc || '')}</div></div>
+        <div class="img-slot-actions">
+          <label class="btn-upload-img" style="cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? .5 : 1};">
+            업로드
+            <input type="file" accept="image/*" style="display:none" ${disabled ? 'disabled' : ''} onchange="handleSlotUpload('${slot.key}', this)">
+          </label>
+          ${url && !disabled ? `<button class="btn-del-img" onclick="handleSlotDelete('${slot.key}')">삭제</button>` : ''}
+        </div>
+      </div>
+      <div class="img-slot-preview" id="preview-${slot.key}">
+        ${url ? `<img src="${url}"><span class="has-img">등록됨</span>` : `<span class="no-img">이미지 없음</span>`}
+      </div>
+    </div>
+  `;
+}
+
+function renderGhSettingsLink() {
+  return `<p style="margin-top:16px;text-align:right;">
+    <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm()">⚙️ GitHub 연동 설정</a>
+  </p>`;
+}
+
+function showGhSetupForm() {
+  document.getElementById('img-manager-body').innerHTML = renderGhSetupForm();
+}
+
+function renderGhSetupForm() {
+  const c = ghConfig || {};
+  return `
+    <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
+      GitHub Pages 저장소 정보를 입력하면, 업로드한 이미지가 저장소에 자동으로 저장되어
+      모든 방문자에게 정상적으로 표시됩니다.<br>
+      토큰은 이 브라우저에만 저장되며 서버로 전송되지 않습니다.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <input id="gh-owner" placeholder="GitHub 계정명 (owner)" value="${c.owner || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
+      <input id="gh-repo" placeholder="저장소 이름 (repo)" value="${c.repo || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
+      <input id="gh-branch" placeholder="브랜치 (기본: main)" value="${c.branch || 'main'}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
+      <input id="gh-token" type="password" placeholder="Personal Access Token" value="${c.token || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
+      <button class="btn-upload-img" style="width:100%;padding:10px;" onclick="saveGhConfig()">저장</button>
+      ${ghConfig && ghConfig.token ? `<button class="btn-del-img" style="width:100%;padding:9px;" onclick="renderImgManagerBody()">취소</button>` : ''}
+    </div>
+  `;
+}
+
+function saveGhConfig() {
+  const owner  = document.getElementById('gh-owner').value.trim();
+  const repo   = document.getElementById('gh-repo').value.trim();
+  const branch = document.getElementById('gh-branch').value.trim() || 'main';
+  const token  = document.getElementById('gh-token').value.trim();
+
+  if (!owner || !repo || !token) {
+    alert('계정명, 저장소 이름, 토큰은 필수입니다.');
+    return;
+  }
+
+  ghConfig = { owner, repo, branch, token };
+  localStorage.setItem('gh_config', JSON.stringify(ghConfig));
+  renderImgManagerBody();
+}
+
+/* ── GitHub API 헬퍼 ── */
+async function ghApi(path, options = {}) {
+  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${path}`;
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Authorization': `token ${ghConfig.token}`,
+      'Accept': 'application/vnd.github+json',
+      ...(options.headers || {})
+    }
+  });
+}
+
+async function getFileSha(path) {
+  try {
+    const res = await ghApi(`${path}?ref=${ghConfig.branch}`);
+    if (res.status === 200) {
+      const data = await res.json();
+      return data.sha;
+    }
+  } catch (e) { /* 파일이 없으면 무시 */ }
+  return null;
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* ── 이미지 업로드 ── */
+async function handleSlotUpload(slotKey, inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  if (!ghConfig || !ghConfig.token) { alert('먼저 GitHub 연동 설정을 완료해주세요.'); return; }
+
+  const previewEl = document.getElementById(`preview-${slotKey}`);
+  if (previewEl) previewEl.innerHTML = `<span class="no-img">업로드 중...</span>`;
+
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const imgPath = `images/${slotKey}.${ext}`;
+    const base64 = await fileToBase64(file);
+
+    const existingSha = await getFileSha(imgPath);
+    const putRes = await ghApi(imgPath, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `이미지 업로드: ${slotKey}`,
+        content: base64,
+        branch: ghConfig.branch,
+        ...(existingSha ? { sha: existingSha } : {})
+      })
+    });
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || '이미지 업로드 실패');
+    }
+
+    const rawUrl = `https://raw.githubusercontent.com/${ghConfig.owner}/${ghConfig.repo}/${ghConfig.branch}/${imgPath}`;
+    imageMap[slotKey] = rawUrl + `?v=${Date.now()}`;
+    await saveImageMap();
+
+    applyImageSlots();
+    renderImgManagerBody();
+  } catch (e) {
+    alert('업로드 중 오류가 발생했습니다.\n' + e.message);
+    renderImgManagerBody();
+  }
+}
+
+/* ── 이미지 삭제 (매핑만 제거, 파일은 저장소에 남습니다) ── */
+async function handleSlotDelete(slotKey) {
+  if (!confirm('이 슬롯에서 이미지를 제거하시겠습니까?\n(저장소의 이미지 파일 자체는 삭제되지 않습니다)')) return;
+  try {
+    delete imageMap[slotKey];
+    await saveImageMap();
+    applyImageSlots();
+    renderImgManagerBody();
+  } catch (e) {
+    alert('삭제 중 오류가 발생했습니다.\n' + e.message);
+  }
+}
+
+/* ── image-map.json 저장 ── */
+async function saveImageMap() {
+  const path = 'image-map.json';
+  const sha = await getFileSha(path);
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(imageMap, null, 2))));
+  const res = await ghApi(path, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: '이미지 맵 업데이트',
+      content,
+      branch: ghConfig.branch,
+      ...(sha ? { sha } : {})
+    })
+  });
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.message || '이미지 맵 저장 실패');
+  }
 }
 
 /* ─────────────────────────────────────────────
