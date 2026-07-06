@@ -1,1624 +1,852 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+// ============================================================
+//  posts.js — 지엘행정사사무소 블로그 데이터 파일
+//  새 글 추가 방법: POSTS 배열 맨 앞에 객체 하나를 추가하세요.
+//  id는 기존 최댓값 + 1로 부여하고, date는 YYYY-MM-DD 형식.
+//
+//  이미지 삽입 방법 (2026-07 업데이트):
+//  본문에 이미지를 직접 <img> 태그로 넣지 않습니다.
+//  대신 아래처럼 "슬롯"만 만들어두면, 홈페이지 우측 하단의
+//  "🖼️ 이미지 관리" 버튼에서 실제 이미지를 업로드/교체할 수 있습니다.
+//
+//    <div class="slot-img-wrap" data-img-slot="원하는-슬롯-이름"></div>
+//
+//  그리고 post 객체에 imageSlots 배열로 슬롯 목록(라벨/설명)을
+//  등록해두면 관리자 패널에 표시됩니다. (썸네일은 자동으로 생김,
+//  별도 등록 불필요)
+// ============================================================
 
-  <!-- SEO 메타태그 (JS로 동적 교체됨) -->
-  <title>지엘행정사사무소 | 식품·축산물 인허가 전문 블로그</title>
-  <meta id="meta-desc" name="description"
-    content="인천 남동구 지엘행정사사무소 공식 블로그. 식품제조가공업, 식육가공업, HACCP 인증 등 축산물·식품 인허가 실무 정보를 제공합니다." />
+const CATEGORIES = [
+  { id: 0, label: "전체 글" },
+  { id: 1, label: "식품제조가공업 등록" },
+  { id: 2, label: "축산물가공업 허가" },
+  { id: 3, label: "기타 영업 허가·등록·신고" },
+  { id: 4, label: "해썹 (HACCP) 인증" },
+  { id: 5, label: "소개글" }
+];
 
-  <!-- Open Graph -->
-  <meta id="og-title"   property="og:title"       content="지엘행정사사무소 블로그" />
-  <meta id="og-desc"    property="og:description"  content="식품·축산물 인허가 10년 경력 행정사의 실무 블로그" />
-  <meta property="og:type"        content="website" />
-  <meta property="og:locale"      content="ko_KR" />
-  <meta property="og:site_name"   content="지엘행정사사무소" />
+/* ──────────────────────────────────────────────────────────
+   공통 반응형 스타일 블록
+   · 모든 post body 앞에 한 번만 삽입
+   · 테이블 → 모바일에서 카드형으로 전환
+   · 박스·섹션 패딩 → 모바일에서 축소
+   · 폰트 크기 → 모바일에서 14px
+────────────────────────────────────────────────────────── */
+const RESPONSIVE_STYLE = `
+<style>
+/* ── 포스트 본문 기본 ── */
+.post-body {
+  font-size: 15px;
+  line-height: 2.2;
+  letter-spacing: -0.02em;
+  color: #2d2d2d;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
 
-  <!-- 네이버 C-Rank / AI 브리핑 크롤러 힌트 -->
-  <meta name="robots" content="index, follow" />
-  <meta name="author" content="지엘행정사사무소 김대운 행정사" />
-  <meta name="keywords" content="식품허가, 식육가공업, HACCP, 해썹, 식품제조가공업, 축산물위생관리법, 인천 행정사" />
+/* ── 반응형 테이블: 모바일에서 카드형 ── */
+@media (max-width: 600px) {
+  .post-body {
+    font-size: 14px;
+    line-height: 2.1;
+  }
+  .resp-table { display: none !important; }
+  .resp-cards { display: block !important; }
+  .intro-box,
+  .standard-box,
+  .case-box-gold {
+    padding: 16px 14px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .post-body h2 { font-size: 17px !important; }
+  .post-body h3 { font-size: 15px !important; }
+  .faq-item .faq-q,
+  .faq-item .faq-a { padding: 12px 14px !important; }
+  .cta-box { padding: 24px 16px !important; }
+  .cta-btn {
+    display: block !important;
+    width: 100% !important;
+    margin: 8px 0 0 !important;
+    text-align: center !important;
+  }
+  .result-box { padding: 14px 16px !important; }
+}
+@media (min-width: 601px) {
+  .resp-cards { display: none !important; }
+  .resp-table { display: table !important; }
+}
 
-  <!-- Schema.org LocalBusiness -->
-  <script type="application/ld+json">
+/* ── 카드형 테이블 (모바일) ── */
+.resp-cards .r-card {
+  border: 1px solid #e8ecf5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.resp-cards .r-head {
+  background: #1a2e5a;
+  color: #fff;
+  font-weight: 700;
+  padding: 9px 14px;
+  font-size: 13px;
+}
+.resp-cards .r-row {
+  display: flex;
+  border-bottom: 1px solid #eef0f6;
+}
+.resp-cards .r-row:last-child { border-bottom: none; }
+.resp-cards .r-label {
+  background: #f0f4ff;
+  color: #1a2e5a;
+  font-weight: 700;
+  padding: 9px 12px;
+  width: 38%;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.resp-cards .r-val {
+  padding: 9px 12px;
+  color: #3a3a3a;
+  font-size: 13px;
+  flex: 1;
+}
+</style>
+`;
+
+const POSTS = [
+  // ──────────────────────────────────────────────
+  //  POST 3  |  즉석판매제조가공업 - 온라인·매장 판매 (인천 식당 사례)
+  // ──────────────────────────────────────────────
   {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "지엘행정사사무소",
-    "description": "식품·축산물 인허가 및 HACCP 인증 전문 행정사 사무소",
-    "telephone": "010-3538-3098",
-    "url": "http://gladmin.co.kr",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "인천광역시 남동구",
-      "addressCountry": "KR"
-    }
-  }
-  </script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
-
-  <style>
-    /* ─────────────────────────────────────────
-       DESIGN TOKEN
-    ───────────────────────────────────────── */
-    :root {
-      --navy:      #1a2e5a;
-      --navy-dark: #111f3e;
-      --gold:      #c8a951;
-      --gold-lt:   #f0dfa0;
-      --bg:        #f5f6f8;
-      --surface:   #ffffff;
-      --border:    #e2e6ed;
-      --text:      #202124;
-      --muted:     #6b7280;
-      --accent:    #2563eb;
-      --radius:    10px;
-      --shadow:    0 2px 12px rgba(0,0,0,.08);
-      --transition: .18s ease;
-    }
-
-    /* ─────────────────────────────────────────
-       RESET & BASE
-    ───────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: 'Noto Sans KR', sans-serif;
-      font-size: 15px;
-      line-height: 1.75;
-      color: var(--text);
-      background: var(--bg);
-    }
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
-    ul { padding-left: 1.4em; }
-    li { margin-bottom: .3em; }
-
-    /* ─────────────────────────────────────────
-       HEADER
-    ───────────────────────────────────────── */
-    #site-header {
-      background: var(--navy);
-      color: #fff;
-      position: sticky;
-      top: 0;
-      z-index: 200;
-      box-shadow: 0 2px 8px rgba(0,0,0,.3);
-    }
-    .header-inner {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 0 20px;
-      height: 58px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .site-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .logo-mark {
-      width: 36px; height: 36px;
-      background: var(--gold);
-      color: var(--navy);
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: -.5px;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 6px;
-    }
-    .logo-text { font-size: 15px; font-weight: 700; line-height: 1.2; }
-    .logo-text small { display: block; font-size: 10px; font-weight: 400; opacity: .75; }
-
-    /* mobile menu toggle */
-    .menu-toggle {
-      display: none;
-      background: none; border: none;
-      color: #fff; font-size: 22px; cursor: pointer;
-      padding: 4px 8px;
-    }
-
-    /* desktop search bar */
-    .header-search {
-      flex: 1; max-width: 360px;
-      display: flex;
-      border: 1.5px solid rgba(255,255,255,.25);
-      border-radius: 24px;
-      overflow: hidden;
-    }
-    .header-search input {
-      flex: 1; padding: 6px 14px;
-      background: rgba(255,255,255,.1);
-      border: none; outline: none;
-      color: #fff; font-size: 13px;
-      font-family: inherit;
-    }
-    .header-search input::placeholder { color: rgba(255,255,255,.5); }
-    .header-search button {
-      padding: 0 14px;
-      background: var(--gold); border: none; cursor: pointer;
-      color: var(--navy); font-size: 14px; font-weight: 700;
-    }
-
-    .header-tel {
-      display: flex; align-items: center; gap: 6px;
-      background: var(--gold); color: var(--navy);
-      font-size: 13px; font-weight: 700;
-      padding: 6px 14px; border-radius: 20px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-    .header-tel:hover { opacity: .9; }
-
-    /* ─────────────────────────────────────────
-       LAYOUT
-    ───────────────────────────────────────── */
-    #app-wrap {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 24px 16px 80px;
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-    }
-
-    /* ─────────────────────────────────────────
-       SIDEBAR
-    ───────────────────────────────────────── */
-    #sidebar {
-      width: 220px;
-      flex-shrink: 0;
-      position: sticky;
-      top: 78px;
-    }
-    .sidebar-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      padding: 20px 16px;
-      margin-bottom: 16px;
-    }
-
-    /* profile */
-    .profile-avatar {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--navy), #2563eb);
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 700;
-      margin: 0 auto 10px;
-    }
-    .profile-name {
-      text-align: center;
-      font-weight: 700; font-size: 14px;
-      color: var(--navy);
-    }
-    .profile-sub {
-      text-align: center;
-      font-size: 11px; color: var(--muted);
-      margin-top: 2px; line-height: 1.5;
-    }
-    .profile-badges {
-      display: flex; flex-wrap: wrap; gap: 4px;
-      justify-content: center; margin-top: 10px;
-    }
-    .badge {
-      font-size: 10px;
-      padding: 2px 8px;
-      border-radius: 12px;
-      background: #eef2ff;
-      color: #3730a3;
-      font-weight: 500;
-    }
-
-    /* category nav */
-    .sidebar-section-title {
-      font-size: 11px; font-weight: 700; letter-spacing: .08em;
-      color: var(--muted); text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .cat-nav { list-style: none; padding: 0; }
-    .cat-nav li { margin-bottom: 2px; }
-    .cat-nav a {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 7px 10px;
-      border-radius: 7px;
-      font-size: 13px;
-      color: var(--text);
-      transition: background var(--transition);
-      cursor: pointer;
-    }
-    .cat-nav a:hover  { background: #f0f4ff; color: var(--navy); }
-    .cat-nav a.active { background: var(--navy); color: #fff; font-weight: 700; }
-    .cat-count {
-      font-size: 11px;
-      background: rgba(0,0,0,.08);
-      padding: 1px 6px; border-radius: 8px;
-    }
-    .cat-nav a.active .cat-count { background: rgba(255,255,255,.2); }
-
-    /* sidebar contact */
-    .sidebar-contact a {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 10px; border-radius: 7px;
-      font-size: 13px; font-weight: 500;
-      color: var(--navy);
-      background: #f0f4ff;
-      margin-bottom: 6px;
-      transition: background var(--transition);
-    }
-    .sidebar-contact a:hover { background: #dde5ff; }
-
-    /* ─────────────────────────────────────────
-       MAIN CONTENT
-    ───────────────────────────────────────── */
-    #main {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* ─────────────────────────────────────────
-       VIEW: LIST
-    ───────────────────────────────────────── */
-    #view-list { display: block; }
-    #view-post { display: none; }
-
-    .list-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .list-title {
-      font-size: 18px; font-weight: 700; color: var(--navy);
-    }
-    .list-count { font-size: 13px; color: var(--muted); }
-
-    /* post card */
-    .post-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 20px 22px;
-      margin-bottom: 14px;
-      display: flex; gap: 16px;
-      cursor: pointer;
-      transition: transform var(--transition), box-shadow var(--transition);
-    }
-    .post-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,.12);
-    }
-    .post-thumb {
-      width: 100px; height: 72px;
-      border-radius: 7px;
-      background: linear-gradient(135deg, var(--navy) 0%, #2563eb 100%);
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,.4); font-size: 28px;
-      overflow: hidden;
-    }
-    .post-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .post-info { flex: 1; min-width: 0; }
-    .post-cat-tag {
-      display: inline-block;
-      font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 10px;
-      background: #eef2ff; color: #3730a3;
-      margin-bottom: 5px;
-    }
-    .post-card-title {
-      font-size: 15px; font-weight: 700;
-      color: var(--text); line-height: 1.4;
-      margin-bottom: 6px;
-      overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    }
-    .post-summary {
-      font-size: 13px; color: var(--muted);
-      overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      line-height: 1.55;
-    }
-    .post-meta {
-      margin-top: 8px;
-      display: flex; align-items: center; gap: 10px;
-      font-size: 11px; color: #9ca3af;
-    }
-    .tag-chip {
-      padding: 1px 7px; border-radius: 10px;
-      background: #f3f4f6; color: #6b7280;
-      font-size: 10px;
-    }
-
-    /* empty state */
-    .empty-state {
-      text-align: center; padding: 60px 0;
-      color: var(--muted); font-size: 14px;
-    }
-    .empty-state .empty-icon { font-size: 40px; margin-bottom: 10px; }
-
-    /* ─────────────────────────────────────────
-       VIEW: POST DETAIL
-    ───────────────────────────────────────── */
-    .post-detail-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 32px 36px;
-    }
-    .post-back {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 13px; color: var(--muted);
-      margin-bottom: 20px; cursor: pointer;
-      transition: color var(--transition);
-    }
-    .post-back:hover { color: var(--navy); }
-    .post-detail-cat {
-      display: inline-block; font-size: 11px; font-weight: 700;
-      padding: 3px 10px; border-radius: 12px;
-      background: var(--navy); color: #fff;
-      margin-bottom: 10px;
-    }
-    .post-detail-title {
-      font-size: 22px; font-weight: 700;
-      color: var(--navy); line-height: 1.4;
-      margin-bottom: 10px;
-    }
-    .post-detail-meta {
-      font-size: 12px; color: var(--muted);
-      display: flex; align-items: center; gap: 12px;
-      padding-bottom: 20px;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 28px;
-    }
-    .tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
-
-    /* ─────────────────────────────────────────
-       POST BODY CONTENT STYLES
-    ───────────────────────────────────────── */
-    .post-body h2 {
-      font-size: 19px; font-weight: 700;
-      color: var(--navy);
-      margin: 36px 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--gold);
-    }
-    .post-body h3 {
-      font-size: 16px; font-weight: 700;
-      color: var(--navy-dark);
-      margin: 24px 0 8px;
-    }
-    .post-body p { margin-bottom: 14px; }
-    .post-body ul { margin-bottom: 14px; }
-    .post-body li { margin-bottom: 5px; }
-    .post-body strong { color: var(--navy); }
-    .post-body em { font-style: normal; color: #b45309; font-weight: 500; }
-
-    /* intro box */
-    .intro-box {
-      background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-      border-left: 4px solid var(--navy);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      padding: 18px 20px;
-      margin-bottom: 28px;
-      font-size: 15px; line-height: 1.75;
-    }
-
-    /* standard / info box */
-    .standard-box {
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 22px;
-      margin: 20px 0;
-    }
-    .standard-box h3 {
-      color: var(--navy);
-      border-left: 3px solid var(--gold);
-      padding-left: 10px;
-      margin-top: 18px;
-    }
-    .standard-box h3:first-child { margin-top: 0; }
-
-    /* step box */
-    .step-box { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
-    .step {
-      display: flex; align-items: flex-start; gap: 14px;
-      background: #f0f4ff;
-      border-radius: var(--radius);
-      padding: 16px 18px;
-    }
-    .step-num {
-      background: var(--navy); color: #fff;
-      font-size: 11px; font-weight: 700;
-      padding: 3px 10px; border-radius: 20px;
-      white-space: nowrap; flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .step-content strong { display: block; margin-bottom: 4px; font-size: 14px; color: var(--navy); }
-    .step-content p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
-
-    /* timeline */
-    .timeline-box { position: relative; padding-left: 28px; margin: 20px 0; }
-    .timeline-box::before {
-      content: ''; position: absolute;
-      left: 9px; top: 8px; bottom: 8px;
-      width: 2px; background: var(--border);
-    }
-    .tl-item { position: relative; margin-bottom: 16px; }
-    .tl-item::before {
-      content: '';
-      position: absolute; left: -23px; top: 5px;
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      background: var(--gold);
-      border: 2px solid var(--surface);
-      box-shadow: 0 0 0 2px var(--gold);
-    }
-    .tl-date {
-      display: inline-block;
-      font-size: 11px; font-weight: 700;
-      color: var(--navy);
-      background: var(--gold-lt);
-      padding: 1px 8px; border-radius: 10px;
-      margin-bottom: 3px;
-    }
-    .tl-item p { font-size: 13px; color: var(--muted); margin: 0; }
-
-    /* FAQ */
-    .faq-box { margin: 20px 0; }
-    .faq-item {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      margin-bottom: 8px;
-    }
-    .faq-q {
-      background: #f8fafc;
-      padding: 12px 16px;
-      font-size: 14px; font-weight: 700;
-      color: var(--navy); margin: 0;
-    }
-    .faq-a {
-      padding: 12px 16px;
-      font-size: 13px; color: var(--muted);
-      margin: 0; line-height: 1.65;
-    }
-
-    /* CTA box */
-    .cta-box {
-      background: linear-gradient(135deg, var(--navy) 0%, #1e3a8a 100%);
-      color: #fff;
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      text-align: center;
-      margin: 36px 0 0;
-    }
-    .cta-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
-    .cta-box p { font-size: 12px; opacity: .7; margin-bottom: 18px; }
-    .cta-btn {
-      display: inline-block;
-      padding: 12px 28px;
-      border-radius: 24px;
-      font-size: 14px; font-weight: 700;
-      background: var(--gold);
-      color: var(--navy);
-      margin: 4px 6px;
-      transition: opacity var(--transition);
-    }
-    .cta-btn:hover { opacity: .88; }
-    .cta-btn-outline {
-      background: transparent;
-      border: 2px solid rgba(255,255,255,.5);
-      color: #fff;
-    }
-
-    /* ─────────────────────────────────────────
-       SEARCH RESULTS BAR
-    ───────────────────────────────────────── */
-    .search-bar-notice {
-      background: #fff7ed;
-      border: 1px solid #fdba74;
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      font-size: 13px; color: #92400e;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .search-clear {
-      margin-left: auto; cursor: pointer;
-      font-size: 12px; color: #b45309; font-weight: 600;
-    }
-
-    /* ─────────────────────────────────────────
-       MOBILE FLOATING CTA
-    ───────────────────────────────────────── */
-    #float-cta {
-      display: none;
-      position: fixed; bottom: 0; left: 0; right: 0;
-      z-index: 300;
-      background: var(--navy);
-      padding: 10px 16px;
-      box-shadow: 0 -3px 12px rgba(0,0,0,.2);
-    }
-    #float-cta a {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      background: var(--gold);
-      color: var(--navy);
-      font-size: 15px; font-weight: 700;
-      border-radius: 10px;
-      padding: 12px;
-    }
-
-    /* ─────────────────────────────────────────
-       MOBILE SIDEBAR OVERLAY
-    ───────────────────────────────────────── */
-    #sidebar-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.45);
-      z-index: 180;
-    }
-
-    /* ─────────────────────────────────────────
-       RESPONSIVE
-    ───────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .header-search { display: none; }
-      .header-tel span { display: none; }
-      .header-tel { padding: 6px 10px; font-size: 16px; }
-      .menu-toggle { display: block; }
-
-      #sidebar {
-        position: fixed;
-        top: 0; left: -260px;
-        width: 260px; height: 100dvh;
-        overflow-y: auto;
-        background: var(--bg);
-        z-index: 190;
-        padding: 70px 12px 100px;
-        transition: left .25s ease;
-        border-right: 1px solid var(--border);
-      }
-      #sidebar.open { left: 0; }
-      #sidebar-overlay.open { display: block; }
-
-      #app-wrap { padding: 16px 12px 100px; }
-
-      .post-detail-wrap { padding: 20px 16px; }
-      .post-detail-title { font-size: 18px; }
-      .post-card { flex-direction: column; gap: 10px; }
-      .post-thumb { width: 100%; height: 160px; }
-
-      #float-cta { display: block; }
-    }
-
-    @media (max-width: 480px) {
-      .post-detail-wrap { padding: 16px 12px; }
-      .post-body h2 { font-size: 17px; }
-    }
-
-    /* ─────────────────────────────────────────
-       이미지 관리 패널
-    ───────────────────────────────────────── */
-    #img-manager-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      position: fixed;
-      right: 20px;
-      bottom: 90px;
-      z-index: 260;
-      padding: 10px 16px;
-      background: var(--navy);
-      color: #fff;
-      border: none;
-      border-radius: 24px;
-      font-size: 13px;
-      font-family: inherit;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,.28);
-      opacity: 0.92;
-      transition: opacity .15s, transform .15s;
-    }
-    #img-manager-toggle:hover { opacity: 1; transform: translateY(-1px); }
-
-    #img-manager-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.4);
-      z-index: 390;
-    }
-    #img-manager-overlay.open { display: block; }
-
-    #img-manager {
-      display: none;
-      position: fixed;
-      top: 0;
-      right: -360px;
-      width: 340px;
-      max-width: 92vw;
-      height: 100dvh;
-      overflow-y: auto;
-      background: #fff;
-      border: none;
-      border-left: 1.5px solid var(--border);
-      border-radius: 0;
-      padding: 20px;
-      margin: 0;
-      z-index: 400;
-      box-shadow: -6px 0 24px rgba(0,0,0,.18);
-      transition: right .25s ease;
-    }
-    #img-manager.open { display: block; right: 0; }
-
-    .img-manager-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 2px solid var(--border);
-    }
-    .img-manager-head h3 {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--navy);
-    }
-    .img-manager-close {
-      background: none;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--muted);
-      line-height: 1;
-    }
-
-    .img-slot-list {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .img-slot-item {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .img-slot-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: #f8f9fd;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--navy);
-      gap: 10px;
-    }
-    .img-slot-label { flex: 1; }
-    .img-slot-desc {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .img-slot-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .btn-upload-img {
-      padding: 5px 12px;
-      background: var(--gold);
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      font-size: 12px;
-      font-family: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .btn-upload-img:hover { background: #b8952f; }
-    .btn-del-img {
-      padding: 5px 10px;
-      background: #fee2e2;
-      color: #b91c1c;
-      border: none;
-      border-radius: 5px;
-      font-size: 12px;
-      font-family: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .btn-del-img:hover { background: #fca5a5; }
-    .img-slot-preview {
-      padding: 10px 14px;
-      min-height: 48px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .img-slot-preview img {
-      max-height: 80px;
-      border-radius: 4px;
-      border: 1px solid var(--border);
-    }
-    .img-slot-preview .no-img {
-      font-size: 12px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .img-slot-preview .has-img {
-      font-size: 12px;
-      color: #16a34a;
-      font-weight: 700;
-    }
-
-    /* 본문 내 슬롯 이미지 */
-    .post-body img.slot-img {
-      width: 100%;
-      border-radius: 8px;
-      margin: 24px 0;
-      display: block;
-    }
-    .post-body .slot-img-wrap {
-      margin: 24px 0;
-      text-align: center;
-    }
-    .post-body .slot-img-wrap img {
-      max-width: 100%;
-      border-radius: 8px;
-    }
-    .post-body .slot-img-wrap .slot-caption {
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    /* 잠금 모달 */
-    #img-lock-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.45);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
-    #img-lock-modal.open { display: flex; }
-    .img-lock-box {
-      background: #fff;
-      border-radius: 12px;
-      padding: 28px 24px;
-      width: 300px;
-      max-width: 90vw;
-      text-align: center;
-    }
-    .img-lock-box h3 { font-size: 16px; margin-bottom: 6px; color: var(--navy); }
-    .img-lock-box p  { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-    .img-lock-box input {
-      width: 100%;
-      border: 1.5px solid var(--border);
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 15px;
-      font-family: inherit;
-      margin-bottom: 12px;
-      text-align: center;
-      letter-spacing: 4px;
-    }
-    .img-lock-box input:focus { outline: none; border-color: var(--navy); }
-    .img-lock-btn {
-      width: 100%;
-      padding: 10px;
-      background: var(--navy);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: inherit;
-      font-weight: 700;
-      cursor: pointer;
-      margin-bottom: 8px;
-    }
-    .img-lock-cancel {
-      background: none;
-      border: none;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .img-lock-error {
-      font-size: 13px;
-      color: #dc2626;
-      margin-top: 6px;
-      display: none;
-    }
-    @media (max-width: 600px) {
-      .img-slot-header { flex-direction: column; align-items: flex-start; }
-      .img-slot-actions { margin-top: 6px; }
-      #img-manager-toggle { right: 12px; bottom: 76px; padding: 9px 14px; font-size: 12px; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- ═══════════════════════════════════════════
-     HEADER
-═══════════════════════════════════════════ -->
-<header id="site-header">
-  <div class="header-inner">
-    <button class="menu-toggle" id="menu-toggle" aria-label="메뉴 열기">☰</button>
-
-    <div class="site-logo" onclick="goHome()">
-      <div class="logo-mark">GL</div>
-      <div class="logo-text">
-        지엘행정사사무소
-        <small>식품·축산물 인허가 전문</small>
-      </div>
-    </div>
-
-    <div class="header-search">
-      <input type="text" id="search-input" placeholder="키워드로 글 검색..." />
-      <button onclick="doSearch()">🔍</button>
-    </div>
-
-    <a href="tel:010-3538-3098" class="header-tel">
-      📞 <span>010-3538-3098</span>
-    </a>
-  </div>
-</header>
-
-<!-- sidebar overlay for mobile -->
-<div id="sidebar-overlay" onclick="closeSidebar()"></div>
-
-<!-- ═══════════════════════════════════════════
-     APP WRAP
-═══════════════════════════════════════════ -->
-<div id="app-wrap">
-
-  <!-- ── SIDEBAR ── -->
-  <aside id="sidebar">
-
-    <!-- Profile -->
-    <div class="sidebar-card">
-      <div class="profile-avatar">김</div>
-      <div class="profile-name">김대운 행정사</div>
-      <div class="profile-sub">지엘행정사사무소<br>인천 남동구 | 경력 10년+</div>
-      <div class="profile-badges">
-        <span class="badge">식품 인허가</span>
-        <span class="badge">HACCP</span>
-        <span class="badge">이민·비자</span>
-      </div>
-    </div>
-
-    <!-- Category -->
-    <div class="sidebar-card">
-      <p class="sidebar-section-title">카테고리</p>
-      <ul class="cat-nav" id="cat-nav"></ul>
-    </div>
-
-    <!-- Contact -->
-    <div class="sidebar-card sidebar-contact">
-      <p class="sidebar-section-title">바로가기</p>
-      <a href="tel:010-3538-3098">📞 전화 상담</a>
-      <a href="http://gladmin.co.kr" target="_blank" rel="noopener">🌐 공식 홈페이지</a>
-    </div>
-
-  </aside>
-
-  <!-- ── MAIN ── -->
-  <main id="main">
-
-    <!-- LIST VIEW -->
-    <div id="view-list">
-      <div class="list-header">
-        <h1 class="list-title" id="list-title">전체 글</h1>
-        <span class="list-count" id="list-count"></span>
-      </div>
-      <div id="search-notice" style="display:none"></div>
-      <div id="post-list"></div>
-    </div>
-
-    <!-- POST DETAIL VIEW -->
-    <div id="view-post">
-      <div class="post-detail-wrap">
-        <span class="post-back" onclick="goBack()">← 목록으로</span>
-        <div id="post-detail-content"></div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     MOBILE FLOATING CTA
-═══════════════════════════════════════════ -->
-<div id="float-cta">
-  <a href="tel:010-3538-3098">📞 010-3538-3098 전화 상담</a>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     이미지 관리자 (토글 버튼 · 패널 · 잠금모달)
-═══════════════════════════════════════════ -->
-<button id="img-manager-toggle" onclick="openImgManager()">🖼️ 이미지 관리</button>
-
-<div id="img-manager-overlay" onclick="closeImgManager()"></div>
-<div id="img-manager">
-  <div class="img-manager-head">
-    <h3>🖼️ 이미지 관리자</h3>
-    <button class="img-manager-close" onclick="closeImgManager()">✕</button>
-  </div>
-  <div id="img-manager-body"></div>
-</div>
-
-<div id="img-lock-modal">
-  <div class="img-lock-box">
-    <h3>🔒 이미지 관리자</h3>
-    <p>관리자 암호를 입력하세요</p>
-    <input type="password" id="img-lock-input" placeholder="암호" />
-    <button class="img-lock-btn" onclick="checkImgLock()">확인</button>
-    <button class="img-lock-cancel" onclick="closeImgLock()">취소</button>
-    <p class="img-lock-error" id="img-lock-error">암호가 올바르지 않습니다.</p>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     SCRIPTS
-═══════════════════════════════════════════ -->
-<script src="posts.js"></script>
-<script>
-/* ─────────────────────────────────────────────
-   STATE
-───────────────────────────────────────────── */
-let state = {
-  view: 'list',      // 'list' | 'post'
-  category: 0,       // 0 = all
-  postId: null,
-  search: '',
-  history: [],       // for back navigation
-};
-
-/* ─────────────────────────────────────────────
-   INIT — URL PARAMETER ROUTING
-───────────────────────────────────────────── */
-function init() {
-  buildCatNav();
-
-  const params = new URLSearchParams(window.location.search);
-  const catParam  = params.get('category');
-  const postParam = params.get('post');
-
-  if (postParam) {
-    const id = parseInt(postParam, 10);
-    openPost(id, false);
-  } else if (catParam) {
-    selectCategory(parseInt(catParam, 10), false);
-  } else {
-    renderList();
-  }
-
-  // keyboard search
-  document.getElementById('search-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doSearch();
-  });
-
-  // 이미지 맵 로드 (GitHub에 저장된 실제 이미지 정보를 불러와 화면에 반영)
-  loadImageMap();
-
-  // 잠금 모달 엔터키 처리
-  document.getElementById('img-lock-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') checkImgLock();
-  });
-}
-
-/* ─────────────────────────────────────────────
-   CATEGORY NAV
-───────────────────────────────────────────── */
-function buildCatNav() {
-  const nav = document.getElementById('cat-nav');
-  nav.innerHTML = '';
-
-  CATEGORIES.forEach(cat => {
-    const count = cat.id === 0
-      ? POSTS.length
-      : POSTS.filter(p => p.category === cat.id).length;
-
-    const li  = document.createElement('li');
-    const a   = document.createElement('a');
-    a.dataset.catId = cat.id;
-    a.innerHTML = `${cat.label} <span class="cat-count">${count}</span>`;
-    a.onclick = () => { selectCategory(cat.id); closeSidebar(); };
-    li.appendChild(a);
-    nav.appendChild(li);
-  });
-
-  updateActiveCat();
-}
-
-function updateActiveCat() {
-  document.querySelectorAll('.cat-nav a').forEach(a => {
-    a.classList.toggle('active', parseInt(a.dataset.catId) === state.category);
-  });
-}
-
-/* ─────────────────────────────────────────────
-   SELECT CATEGORY
-───────────────────────────────────────────── */
-function selectCategory(catId, pushHistory = true) {
-  if (pushHistory && state.view !== 'list') state.history.push({...state});
-  state.category = catId;
-  state.search   = '';
-  state.view     = 'list';
-  state.postId   = null;
-  document.getElementById('search-input').value = '';
-  updateURL();
-  renderList();
-  updateActiveCat();
-}
-
-/* ─────────────────────────────────────────────
-   RENDER LIST
-───────────────────────────────────────────── */
-function renderList() {
-  showView('list');
-
-  let filtered = state.category === 0
-    ? [...POSTS]
-    : POSTS.filter(p => p.category === state.category);
-
-  if (state.search) {
-    const q = state.search.toLowerCase();
-    filtered = filtered.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.summary.toLowerCase().includes(q) ||
-      (p.tags || []).some(t => t.toLowerCase().includes(q))
-    );
-  }
-
-  const catLabel = CATEGORIES.find(c => c.id === state.category)?.label || '전체 글';
-  document.getElementById('list-title').textContent =
-    state.search ? `"${state.search}" 검색 결과` : catLabel;
-  document.getElementById('list-count').textContent = `총 ${filtered.length}건`;
-
-  // search notice
-  const noticeEl = document.getElementById('search-notice');
-  if (state.search) {
-    noticeEl.style.display = 'block';
-    noticeEl.innerHTML = `
-      <div class="search-bar-notice">
-        🔍 <strong>"${state.search}"</strong> 검색 결과입니다.
-        <span class="search-clear" onclick="clearSearch()">✕ 검색 취소</span>
-      </div>`;
-  } else {
-    noticeEl.style.display = 'none';
-  }
-
-  // update page meta for list
-  updateMeta(catLabel + ' | 지엘행정사사무소 블로그',
-    `지엘행정사사무소의 ${catLabel} 관련 실무 정보 모음입니다.`);
-
-  const listEl = document.getElementById('post-list');
-  if (filtered.length === 0) {
-    listEl.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📭</div>
-        <p>아직 등록된 글이 없습니다.</p>
-      </div>`;
-    return;
-  }
-
-  listEl.innerHTML = filtered.map(post => {
-    const catLabel = CATEGORIES.find(c => c.id === post.category)?.label || '';
-    const tagsHtml = (post.tags || []).slice(0, 3)
-      .map(t => `<span class="tag-chip">#${t}</span>`).join('');
-    const thumbHtml = post.thumbnail
-      ? `<img src="${post.thumbnail}" alt="${escHtml(post.title)}" />`
-      : '📄';
-
-    return `
-      <div class="post-card" onclick="openPost(${post.id})">
-        <div class="post-thumb" data-thumb-slot="thumb-${post.id}">${thumbHtml}</div>
-        <div class="post-info">
-          <span class="post-cat-tag">${escHtml(catLabel)}</span>
-          <p class="post-card-title">${escHtml(post.title)}</p>
-          <p class="post-summary">${escHtml(post.summary)}</p>
-          <div class="post-meta">
-            <span>${post.date}</span>
-            <div class="tag-list">${tagsHtml}</div>
-          </div>
-        </div>
-      </div>`;
-  }).join('');
-
-  applyImageSlots();
-}
-
-/* ─────────────────────────────────────────────
-   OPEN POST
-───────────────────────────────────────────── */
-function openPost(postId, pushHistory = true) {
-  const post = POSTS.find(p => p.id === postId);
-  if (!post) { renderList(); return; }
-
-  if (pushHistory) state.history.push({...state});
-  state.view   = 'post';
-  state.postId = postId;
-  updateURL();
-  showView('post');
-
-  const catLabel = CATEGORIES.find(c => c.id === post.category)?.label || '';
-  const tagsHtml = (post.tags || [])
-    .map(t => `<span class="tag-chip">#${t}</span>`).join('');
-
-  document.getElementById('post-detail-content').innerHTML = `
-    <span class="post-detail-cat">${escHtml(catLabel)}</span>
-    <h1 class="post-detail-title">${escHtml(post.title)}</h1>
-    <div class="post-detail-meta">
-      <span>📅 ${post.date}</span>
-      <span>✍️ 김대운 행정사</span>
-      <div class="tag-list">${tagsHtml}</div>
-    </div>
-    ${post.body}
-  `;
-
-  // dynamic SEO meta
-  updateMeta(post.title + ' | 지엘행정사사무소', post.summary);
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  applyImageSlots();
-  // 이미지 관리 패널이 열려 있다면 새 글에 맞춰 슬롯 목록을 다시 그림
-  if (document.getElementById('img-manager').classList.contains('open')) {
-    renderImgManagerBody();
-  }
-}
-
-/* ─────────────────────────────────────────────
-   NAVIGATION HELPERS
-───────────────────────────────────────────── */
-function goBack() {
-  if (state.history.length > 0) {
-    const prev = state.history.pop();
-    Object.assign(state, prev);
-  } else {
-    state.view     = 'list';
-    state.postId   = null;
-  }
-  updateURL();
-  if (state.view === 'post') {
-    openPost(state.postId, false);
-  } else {
-    renderList();
-  }
-}
-
-function goHome() {
-  state = { view: 'list', category: 0, postId: null, search: '', history: [] };
-  document.getElementById('search-input').value = '';
-  updateURL();
-  renderList();
-  updateActiveCat();
-}
-
-/* ─────────────────────────────────────────────
-   SEARCH
-───────────────────────────────────────────── */
-function doSearch() {
-  const q = document.getElementById('search-input').value.trim();
-  if (!q) return;
-  state.search   = q;
-  state.category = 0;
-  state.view     = 'list';
-  state.postId   = null;
-  updateActiveCat();
-  renderList();
-}
-
-function clearSearch() {
-  state.search = '';
-  document.getElementById('search-input').value = '';
-  renderList();
-}
-
-/* ─────────────────────────────────────────────
-   VIEW SWITCH
-───────────────────────────────────────────── */
-function showView(which) {
-  document.getElementById('view-list').style.display = which === 'list' ? 'block' : 'none';
-  document.getElementById('view-post').style.display = which === 'post'  ? 'block' : 'none';
-}
-
-/* ─────────────────────────────────────────────
-   DYNAMIC SEO META
-───────────────────────────────────────────── */
-function updateMeta(title, desc) {
-  document.title = title;
-  document.getElementById('meta-desc').setAttribute('content', desc);
-  document.getElementById('og-title').setAttribute('content', title);
-  document.getElementById('og-desc').setAttribute('content', desc);
-}
-
-/* ─────────────────────────────────────────────
-   URL SYNC
-───────────────────────────────────────────── */
-function updateURL() {
-  const params = new URLSearchParams();
-  if (state.view === 'post' && state.postId) {
-    params.set('post', state.postId);
-  } else if (state.category !== 0) {
-    params.set('category', state.category);
-  }
-  const newUrl = params.toString()
-    ? `${location.pathname}?${params.toString()}`
-    : location.pathname;
-  history.pushState(null, '', newUrl);
-}
-
-window.addEventListener('popstate', () => {
-  const params = new URLSearchParams(window.location.search);
-  const catParam  = params.get('category');
-  const postParam = params.get('post');
-  if (postParam) {
-    openPost(parseInt(postParam, 10), false);
-  } else if (catParam) {
-    selectCategory(parseInt(catParam, 10), false);
-  } else {
-    state = { view: 'list', category: 0, postId: null, search: '', history: [] };
-    renderList();
-    updateActiveCat();
-  }
-});
-
-/* ─────────────────────────────────────────────
-   MOBILE SIDEBAR
-───────────────────────────────────────────── */
-document.getElementById('menu-toggle').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebar-overlay').classList.toggle('open');
-});
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
-}
-
-/* ─────────────────────────────────────────────
-   UTIL
-───────────────────────────────────────────── */
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ═══════════════════════════════════════════════════════════
-   이미지 관리자 (GitHub 저장소 연동)
-   ─────────────────────────────────────────────────────────
-   동작 원리
-   1) 업로드한 이미지는 이 저장소(repo)의 images/ 폴더에 실제로
-      저장되고, image-map.json 파일에 "슬롯이름 → 이미지주소"가
-      기록됩니다. 즉 브라우저 저장(localStorage)이 아니라 GitHub
-      저장소 자체에 저장되므로, 홈페이지에 방문하는 모든 사람에게
-      동일하게 이미지가 보입니다.
-   2) 최초 1회, 우측 패널 하단의 "GitHub 연동 설정"에서
-      - GitHub 계정명(owner)
-      - 저장소 이름(repo)
-      - 브랜치명(보통 main)
-      - Personal Access Token (repo 쓰기 권한 필요)
-      를 입력해두면 그 다음부터는 업로드 버튼만 누르면 됩니다.
-   3) 암호창은 아무나 이미지가 바뀌지 않도록 막는 간단한 잠금
-      장치입니다. 아래 IMG_LOCK_PASSWORD 값을 원하는 암호로
-      바꿔서 사용하세요.
-═══════════════════════════════════════════════════════════ */
-
-const IMG_LOCK_PASSWORD = "gladmin1234"; // ← 원하는 암호로 변경하세요
-
-let ghConfig = JSON.parse(localStorage.getItem('gh_config') || 'null');
-let imageMap = {};
-let imgManagerUnlocked = sessionStorage.getItem('img_unlocked') === '1';
-
-/* ── 이미지 맵 로드 & 화면 반영 ── */
-async function loadImageMap() {
-  try {
-    const res = await fetch('./image-map.json?t=' + Date.now(), { cache: 'no-store' });
-    if (res.ok) {
-      imageMap = await res.json();
-    } else {
-      imageMap = {};
-    }
-  } catch (e) {
-    imageMap = {};
-  }
-  applyImageSlots();
-}
-
-function applyImageSlots() {
-  // 본문 내 이미지 슬롯 (data-img-slot)
-  document.querySelectorAll('[data-img-slot]').forEach(el => {
-    const key = el.dataset.imgSlot;
-    const url = imageMap[key];
-    el.innerHTML = url ? `<img src="${url}" alt="${escHtml(key)}" loading="lazy">` : '';
-  });
-  // 목록 썸네일 (data-thumb-slot) — 이미지가 없으면 기존 아이콘/썸네일 유지
-  document.querySelectorAll('[data-thumb-slot]').forEach(el => {
-    const key = el.dataset.thumbSlot;
-    const url = imageMap[key];
-    if (url) el.innerHTML = `<img src="${url}" alt="thumbnail">`;
-  });
-}
-
-/* ── 잠금 모달 ── */
-function openImgManager() {
-  if (!imgManagerUnlocked) {
-    document.getElementById('img-lock-modal').classList.add('open');
-    document.getElementById('img-lock-input').value = '';
-    document.getElementById('img-lock-error').style.display = 'none';
-    setTimeout(() => document.getElementById('img-lock-input').focus(), 50);
-  } else {
-    showImgManagerPanel();
-  }
-}
-
-function checkImgLock() {
-  const val = document.getElementById('img-lock-input').value;
-  if (val === IMG_LOCK_PASSWORD) {
-    imgManagerUnlocked = true;
-    sessionStorage.setItem('img_unlocked', '1');
-    closeImgLock();
-    showImgManagerPanel();
-  } else {
-    document.getElementById('img-lock-error').style.display = 'block';
-  }
-}
-
-function closeImgLock() {
-  document.getElementById('img-lock-modal').classList.remove('open');
-}
-
-/* ── 패널 열기/닫기 ── */
-function showImgManagerPanel() {
-  document.getElementById('img-manager').classList.add('open');
-  document.getElementById('img-manager-overlay').classList.add('open');
-  renderImgManagerBody();
-}
-function closeImgManager() {
-  document.getElementById('img-manager').classList.remove('open');
-  document.getElementById('img-manager-overlay').classList.remove('open');
-}
-
-/* ── 패널 내용 렌더링 ── */
-function renderImgManagerBody() {
-  const body = document.getElementById('img-manager-body');
-
-  if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
-    body.innerHTML = renderGhSetupForm();
-    return;
-  }
-
-  if (state.view !== 'post' || !state.postId) {
-    body.innerHTML = `
-      <p style="font-size:13px;color:var(--muted);line-height:1.7;">
-        글 목록 화면에서는 썸네일만 관리할 수 있습니다.<br>
-        본문 이미지를 관리하려면 글을 먼저 열어주세요.
-      </p>
-      <div class="img-slot-list" style="margin-top:14px;">
-        ${renderSlotRow({ key: `thumb-all`, label: '(참고) 각 글의 썸네일', desc: '글을 열면 개별적으로 관리할 수 있습니다.' }, true)}
-      </div>
-      ${renderGhSettingsLink()}
-    `;
-    return;
-  }
-
-  const post = POSTS.find(p => p.id === state.postId);
-  const slots = [
-    { key: `thumb-${post.id}`, label: '썸네일 이미지', desc: '목록 화면에 표시되는 대표 이미지' },
-    ...(post.imageSlots || [])
-  ];
-
-  body.innerHTML = `
-    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
-      현재 글: <strong style="color:var(--navy);">${escHtml(post.title)}</strong>
+    id: 3,
+    category: 3,
+    title: "식당에서 만든 반찬·소스, 온라인으로 팔고 싶다면? 즉석판매제조가공업 정의",
+    summary: "식당이나 반찬가게를 운영하면서 온라인으로 제품을 판매하고 싶은 분들이 많습니다. 매장 내 판매와 온라인 판매 모두 가능한지, 어디까지 허용되는지 즉석판매제조가공업을 중심으로 정리합니다.",
+    date: "2026-07-02",
+    tags: ["즉석판매제조가공업", "즉석판매제조가공업신고", "식당온라인판매", "반찬온라인판매", "식품위생법", "식품인허가", "지엘행정사사무소"],
+    thumbnail: "",
+    body: `
+${RESPONSIVE_STYLE}
+<article class="post-body">
+
+  <section class="intro-box" style="margin-bottom:40px;padding:22px 24px;">
+    <p style="margin:0;font-size:15px;font-style:italic;color:#3a4a6a;">
+      "식당을 운영하고 있는데, 제가 직접 만든 김치나 반찬을 온라인에서도 팔고 싶어요.<br>따로 허가를 받아야 하나요?"
     </p>
-    <div class="img-slot-list">
-      ${slots.map(s => renderSlotRow(s)).join('')}
+    <p style="margin-top:18px;margin-bottom:0;">
+      음식점을 운영하다 보면 자연스럽게 생기는 고민입니다.
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      매장에서 잘 팔리는 반찬, 직접 개발한 소스, 정성껏 담근 김치를 온라인으로도 팔고 싶은데 — 기존 음식점 영업으로 그냥 팔면 되는지, 따로 신고가 필요한지 헷갈리시는 거죠.
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      결론부터 말씀드리면, <strong>음식점 영업만으로는 온라인 판매나 포장(진열) 판매를 할 수 없습니다.</strong>
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      별도로 <strong>즉석판매제조가공업 신고</strong>를 해야 합니다.
+    </p>
+  </section>
+
+  <div class="standard-box" style="margin-bottom:48px;">
+    <p style="margin:0;line-height:2.1;">
+      💡 <strong>핵심 정리</strong><br><br>
+      음식점 영업 → 매장에서 <strong>조리한 음식을 식사로 제공</strong>하는 것만 가능<br>
+      즉석판매제조가공업 → 직접 만든 식품을 <strong>포장(진열)해서 판매하거나 온라인으로 판매</strong> 가능<br><br>
+      <span style="font-size:13px;color:#6b7280;">※ 다른 식당·마트에 납품하려면 식품제조가공업 등록이 별도로 필요합니다.</span>
+    </p>
+  </div>
+
+
+  <h2>1. 즉석판매제조가공업이란? – 법적 정의</h2>
+
+  <p style="margin-top:20px;">
+    <strong>즉석판매제조가공업</strong>은 「식품위생법 시행령」 제21조에 따라 <strong>신고</strong>를 하고 운영하는 영업입니다.
+  </p>
+  <p style="margin-top:14px;">
+    법령상 정의는 이렇습니다.
+  </p>
+
+  <div class="standard-box" style="margin:18px 0 24px;padding:18px 22px;">
+    <p style="margin:0;font-size:14px;color:#2a3a5a;line-height:2.0;">
+      "총리령에서 정하는 식품을 제조·가공업소에서 직접 최종 소비자에게 판매하는 영업"<br>
+      <span style="font-size:12px;color:#6b7280;">— 식품위생법 시행령 제21조 제5호</span>
+    </p>
+  </div>
+
+  <p>여기서 핵심 키워드는 두 가지입니다.</p>
+
+  <p style="margin-top:12px;">
+    <strong>① 제조·가공업소에서</strong> — 매장 내 진열 판매 또는 온라인으로 판매하는 것<br>
+    <strong>② 최종 소비자에게 판다</strong> — 영업을 목적으로 하는 사람이 아닌 최종 소비자에게 직접 파는 것
+  </p>
+
+  <p style="margin-top:14px;margin-bottom:36px;">
+    이 두 가지가 충족된다면, 매장에서 파는 것이든 온라인으로 파는 것이든 즉석판매제조가공업의 범위에 해당합니다.
+  </p>
+
+
+  <h2>2. 기존 음식점 허가로는 왜 안 되나요?</h2>
+
+  <p style="margin-top:20px;">
+    "이미 음식점 허가가 있는데 왜 또 신고를 해야 하나요?"라고 물어보시는 분들이 많습니다.
+  </p>
+  <p style="margin-top:14px;">
+    이유는 법적으로 <strong>영업 허가의 목적이 다르기 때문</strong>입니다.
+  </p>
+  <p style="margin-top:14px;margin-bottom:24px;">
+    일반음식점 허가는 손님이 자리에 앉아 드시는 '식사 제공'이 목적입니다. 반면 진열 판매나 온라인 판매는 '식품을 제조해서 포장된 제품을 파는 것'으로, 법적으로 다른 행위입니다.
+  </p>
+
+  <!-- PC 테이블 -->
+  <div class="resp-table standard-box" style="padding:0;overflow:hidden;margin:0 0 20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.9;">
+      <thead>
+        <tr>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;width:26%;">구분</th>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;">일반음식점 영업</th>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;">즉석판매제조가공업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">목적</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">매장에서 식사 제공</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">포장된 제품을 판매</td>
+        </tr>
+        <tr style="background:#f8f9fd;">
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">매장 내 식사 제공</td>
+          <td style="padding:12px 14px;text-align:center;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">✅ 가능</td>
+          <td style="padding:12px 14px;text-align:center;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">해당 없음</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">진열·포장 판매</td>
+          <td style="padding:12px 14px;text-align:center;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">❌ 불가</td>
+          <td style="padding:12px 14px;text-align:center;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">✅ 가능</td>
+        </tr>
+        <tr style="background:#f8f9fd;">
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;">온라인 판매</td>
+          <td style="padding:12px 14px;text-align:center;color:#3a3a3a;">❌ 불가</td>
+          <td style="padding:12px 14px;text-align:center;color:#3a3a3a;">✅ 가능</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 모바일 카드 -->
+  <div class="resp-cards" style="margin:0 0 20px;">
+    <div class="r-card">
+      <div class="r-head">일반음식점 영업</div>
+      <div class="r-row"><div class="r-label">목적</div><div class="r-val">매장에서 식사 제공</div></div>
+      <div class="r-row"><div class="r-label">식사 제공</div><div class="r-val">✅ 가능</div></div>
+      <div class="r-row"><div class="r-label">진열·포장 판매</div><div class="r-val">❌ 불가</div></div>
+      <div class="r-row"><div class="r-label">온라인 판매</div><div class="r-val">❌ 불가</div></div>
     </div>
-    ${renderGhSettingsLink()}
-  `;
-}
-
-function renderSlotRow(slot, disabled = false) {
-  const url = imageMap[slot.key];
-  return `
-    <div class="img-slot-item">
-      <div class="img-slot-header">
-        <div class="img-slot-label">${escHtml(slot.label)}<div class="img-slot-desc">${escHtml(slot.desc || '')}</div></div>
-        <div class="img-slot-actions">
-          <label class="btn-upload-img" style="cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? .5 : 1};">
-            업로드
-            <input type="file" accept="image/*" style="display:none" ${disabled ? 'disabled' : ''} onchange="handleSlotUpload('${slot.key}', this)">
-          </label>
-          ${url && !disabled ? `<button class="btn-del-img" onclick="handleSlotDelete('${slot.key}')">삭제</button>` : ''}
-        </div>
-      </div>
-      <div class="img-slot-preview" id="preview-${slot.key}">
-        ${url ? `<img src="${url}"><span class="has-img">등록됨</span>` : `<span class="no-img">이미지 없음</span>`}
-      </div>
+    <div class="r-card">
+      <div class="r-head">즉석판매제조가공업</div>
+      <div class="r-row"><div class="r-label">목적</div><div class="r-val">포장된 제품을 판매</div></div>
+      <div class="r-row"><div class="r-label">식사 제공</div><div class="r-val">해당 없음</div></div>
+      <div class="r-row"><div class="r-label">진열·포장 판매</div><div class="r-val">✅ 가능</div></div>
+      <div class="r-row"><div class="r-label">온라인 판매</div><div class="r-val">✅ 가능</div></div>
     </div>
-  `;
-}
+  </div>
 
-function renderGhSettingsLink() {
-  return `<p style="margin-top:16px;text-align:right;">
-    <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm()">⚙️ GitHub 연동 설정</a>
-  </p>`;
-}
+  <div class="standard-box" style="margin:20px 0 48px;">
+    <p style="margin:0;line-height:2.1;">
+      📌 <strong>음식점을 운영하면서 온라인 판매를 함께 하고 싶다면,</strong><br>
+      기존 음식점 영업은 유지하면서 즉석판매제조가공업을 <strong>추가로 신고</strong>하는 방식으로 진행합니다.<br>
+      두 영업을 함께 운영하는 것은 법적으로 가능합니다.
+    </p>
+  </div>
 
-function showGhSetupForm() {
-  document.getElementById('img-manager-body').innerHTML = renderGhSetupForm();
-}
 
-function renderGhSetupForm() {
-  const c = ghConfig || {};
-  return `
-    <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
-      GitHub Pages 저장소 정보를 입력하면, 업로드한 이미지가 저장소에 자동으로 저장되어
-      모든 방문자에게 정상적으로 표시됩니다.<br>
-      토큰은 이 브라우저에만 저장되며 서버로 전송되지 않습니다.
+  <h2>3. 즉석판매제조가공업으로 어디까지 팔 수 있나요?</h2>
+
+  <p style="margin-top:20px;margin-bottom:20px;">
+    이 업종으로 가능한 판매 방식과 안 되는 방식을 구체적으로 정리했습니다.
+  </p>
+
+  <h3 style="margin-top:24px;">✅ 가능한 것</h3>
+  <div class="standard-box" style="margin:12px 0 24px;padding:18px 22px;">
+    <p style="margin:0;font-size:14px;line-height:2.5;color:#2a3a5a;">
+      <strong>· 매장 내 직접 판매</strong><br>
+      <span style="color:#555;padding-left:12px;">내 가게 안에서 손님에게 직접 판매, 반찬 소분·진열 판매 포함.</span><br>
+      <strong>· 스마트스토어·쿠팡·네이버쇼핑 등 온라인 판매</strong><br>
+      <span style="color:#555;padding-left:12px;">개인 소비자 대상 온라인 쇼핑몰 판매 가능.</span><br>
+      <strong>· SNS 주문 판매 (인스타그램·카카오채널 등)</strong><br>
+      <span style="color:#555;padding-left:12px;">DM·카톡으로 주문받아 판매하는 형태도 가능.</span><br>
+      <strong>· 택배·배달 발송</strong><br>
+      <span style="color:#555;padding-left:12px;">개인 소비자에게 직접 택배로 발송하는 것 가능.</span><br>
+      <strong>· 배달앱 포장 상품 판매</strong><br>
+      <span style="color:#555;padding-left:12px;">배달의민족·쿠팡이츠 등에서 포장 상품으로 판매 가능.</span>
+    </p>
+  </div>
+
+  <h3>❌ 안 되는 것</h3>
+  <div class="standard-box" style="margin:12px 0 24px;padding:18px 22px;background:#fff8f8;border-left-color:#c0392b;">
+    <p style="margin:0;font-size:14px;line-height:2.5;color:#2a3a5a;">
+      <strong>· 다른 식당·카페에 납품</strong><br>
+      <span style="color:#555;padding-left:12px;">프랜차이즈 가맹점, 급식업체, 인근 식당 등 다른 영업자에게 납품 불가.</span><br>
+      <strong>· 마트·편의점 등 유통</strong><br>
+      <span style="color:#555;padding-left:12px;">대형마트, 슈퍼, 편의점 등에 제품을 입점시켜 유통하는 것 불가.</span><br>
+      <strong>· 도매상·식자재업체 납품</strong><br>
+      <span style="color:#555;padding-left:12px;">식자재 도매업체나 유통 대행사를 통한 B2B 유통 불가.</span>
+    </p>
+  </div>
+
+  <div class="standard-box" style="margin:0 0 48px;">
+    <p style="margin:0;line-height:2.1;">
+      📌 <strong>납품·유통이 목적이라면 식품제조가공업 등록이 필요합니다.</strong><br><br>
+      즉석판매제조가공업은 어디까지나 <strong>내가 만들어서 개인 소비자에게 직접 파는 것</strong>이 전제입니다.<br>
+      다른 업체에 납품하거나 유통망을 통해 파는 순간, 식품제조가공업 등록 대상이 됩니다.
+    </p>
+  </div>
+
+
+  <h2>4. 온라인으로 팔 때 반드시 챙겨야 할 것</h2>
+
+  <p style="margin-top:20px;">
+    즉석판매제조가공업 신고를 마쳤다고 해서 바로 온라인 판매를 시작할 수 있는 건 아닙니다.
+  </p>
+  <p style="margin-top:14px;margin-bottom:22px;">
+    온라인 판매를 시작하려면 영업 신고 외에 아래 사항을 추가로 갖춰야 합니다.
+  </p>
+
+  <div class="standard-box" style="margin:0 0 20px;padding:18px 22px;">
+    <p style="margin:0;font-size:14px;line-height:2.5;color:#2a3a5a;">
+      <strong>① 식품 표시 기준 준수</strong><br>
+      <span style="color:#555;padding-left:12px;">제품 포장에 제품명, 식품유형, 원재료명, 소비기한, 보관방법, 영업소 명칭·소재지 등을 표시해야 합니다.</span><br>
+      <strong>② 통신판매업 신고</strong><br>
+      <span style="color:#555;padding-left:12px;">온라인으로 판매하려면 관할 지자체에 통신판매업 신고를 별도로 해야 합니다. (자사몰, SNS 판매 모두 해당)</span><br>
+      <strong>③ 위생적인 포장·배송 관리</strong><br>
+      <span style="color:#555;padding-left:12px;">냉장·냉동 제품은 보관 운송 기준에 적합한 포장을 갖춰야 합니다.</span>
+    </p>
+  </div>
+
+  <p style="margin-bottom:40px;">
+    처음 온라인 판매를 시작하시는 분들이 가장 많이 놓치는 부분이 <strong>식품 표시</strong>입니다. 즉석판매제조가공업 신고와 함께 꼭 확인하시기 바랍니다.
+  </p>
+
+
+  <h2>5. 실제 사례 – 인천 한식당 온라인 판매 문의 사례</h2>
+
+  <div class="case-box-gold standard-box" style="margin:22px 0 30px;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
+    <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">📌 사례 개요</h3>
+    <p style="margin:0;line-height:2.1;font-size:14px;color:#4a3a00;">
+      상황 : 인천 한식당 운영 중, 직접 만든 반찬을 온라인으로 판매하고 싶었음<br>
+      기존 허가 : 일반음식점 영업 신고증 보유<br>
+      고민 : 기존 음식점 영업으로 온라인 판매가 가능한지 몰랐음<br>
+      결과 : 즉석판매제조가공업 추가 신고 + 통신판매업 신고 완료 후 온라인 판매 시작
+    </p>
+  </div>
+
+  <p>
+    인천에서 한식당을 운영하시는 대표님이 상담을 요청해 오셨습니다.
+  </p>
+  <p style="margin-top:14px;">
+    단골손님들이 "이 반찬 집에서도 먹고 싶다", "소스 따로 살 수 있냐"는 말을 자주 해서 온라인 판매를 고민하게 되셨다고 했습니다.
+  </p>
+  <p style="margin-top:14px;">
+    기존 음식점 허가로 그냥 팔면 되는 거 아니냐고 물어보셨는데, 저희가 상황을 확인해 드렸습니다.
+  </p>
+
+  <div class="case-box-gold standard-box" style="margin:24px 0;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
+    <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">💬 상담 당시 실제로 드린 말씀</h3>
+    <p style="margin:0;font-size:14px;line-height:2.2;color:#5a4200;font-style:italic;">
+      "음식점 영업은 매장에서 식사를 제공하는 업종입니다.<br>
+      매장 내 진열 판매나 온라인 판매는 별개의 영업 행위이기 때문에,<br>
+      즉석판매제조가공업을 추가로 신고하셔야 합니다.<br><br>
+      기존 음식점 영업은 그대로 두고 즉석판매제조가공업을 추가 신고하는 방식이라 어렵지 않습니다.<br>
+      온라인 판매를 위한 통신판매업 신고도 함께 진행하시면<br>
+      바로 스마트스토어나 SNS에서 판매를 시작하실 수 있습니다."
+    </p>
+  </div>
+
+  <p>이후 즉석판매제조가공업 영업 신고를 진행했습니다.</p>
+  <p style="margin-top:14px;">
+    신고 완료 후 스마트스토어를 개설하고, 현재는 매장 영업과 온라인 판매를 병행하고 계십니다. 매장에서 팔던 반찬이 온라인에서도 꾸준히 판매되고 있다고 하셨습니다.
+  </p>
+
+  <div class="result-box" style="background:#f0f4ff;border-left:4px solid #1a2e5a;border-radius:0 8px 8px 0;padding:16px 20px;font-size:14px;color:#2a3a5a;margin:24px 0 48px;line-height:2.1;">
+    <strong>✅ 진행 결과</strong><br>
+    기존 영업 : 일반음식점 (유지)<br>
+    추가 신고 : 즉석판매제조가공업 영업 신고 완료<br>
+    부가 신고 : 통신판매업 신고 완료<br>
+    판매 채널 : 매장 판매 + 스마트스토어 온라인 판매 병행
+  </div>
+
+
+  <h2>🙋 자주 묻는 질문 (FAQ)</h2>
+
+  <div class="faq-box" style="margin-top:22px;margin-bottom:48px;">
+
+    <div class="faq-item">
+      <p class="faq-q">배달의민족·쿠팡이츠에서 반찬 메뉴를 팔고 싶은데, 음식점으로는 안 되나요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        배달앱에서 '식사 메뉴'로 파는 건 음식점 영업으로 가능합니다.<br>
+        하지만 반찬·김치·소스류를 <strong>미리 포장한 상품</strong>으로 별도 판매하는 경우에는 즉석판매제조가공업 신고가 필요합니다.<br>
+        어떤 형태로 파느냐에 따라 달라지므로, 판매 방식을 먼저 확인하시는 게 좋습니다.
+      </p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <input id="gh-owner" placeholder="GitHub 계정명 (owner)" value="${c.owner || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
-      <input id="gh-repo" placeholder="저장소 이름 (repo)" value="${c.repo || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
-      <input id="gh-branch" placeholder="브랜치 (기본: main)" value="${c.branch || 'main'}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
-      <input id="gh-token" type="password" placeholder="Personal Access Token" value="${c.token || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
-      <button class="btn-upload-img" style="width:100%;padding:10px;" onclick="saveGhConfig()">저장</button>
-      ${ghConfig && ghConfig.token ? `<button class="btn-del-img" style="width:100%;padding:9px;" onclick="renderImgManagerBody()">취소</button>` : ''}
+
+    <div class="faq-item">
+      <p class="faq-q">나중에 마트나 다른 식당에도 납품하고 싶어지면요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        즉석판매제조가공업만으로는 납품이 불가능합니다.<br>
+        다른 업체에 납품하려면 <strong>식품제조가공업 등록</strong>이 별도로 필요합니다.<br>
+        처음부터 납품까지 계획하고 계신다면, 즉석판매제조가공업보다 식품제조가공업으로 준비하시는 것이 더 효율적입니다.
+      </p>
     </div>
-  `;
-}
 
-function saveGhConfig() {
-  const owner  = document.getElementById('gh-owner').value.trim();
-  const repo   = document.getElementById('gh-repo').value.trim();
-  const branch = document.getElementById('gh-branch').value.trim() || 'main';
-  const token  = document.getElementById('gh-token').value.trim();
+    <div class="faq-item" style="margin-bottom:0;">
+      <p class="faq-q">즉석판매제조가공업 신고 후 바로 온라인 판매를 시작할 수 있나요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        즉석판매제조가공업 신고 외에 <strong>통신판매업 신고</strong>를 함께 하셔야 합니다.<br>
+        또한 제품 포장에 식품 표시 사항(원재료, 소비기한, 영업소 정보 등)을 갖춰야 판매가 가능합니다.<br>
+        두 가지 신고와 표시 기준까지 함께 준비하시면 바로 온라인 판매를 시작하실 수 있습니다.
+      </p>
+    </div>
 
-  if (!owner || !repo || !token) {
-    alert('계정명, 저장소 이름, 토큰은 필수입니다.');
-    return;
+  </div>
+
+  <div class="cta-box" style="padding:34px 22px;">
+    <p class="cta-title">🏪 즉석판매제조가공업 신고 · 온라인 판매 인허가, 처음부터 함께합니다</p>
+    <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
+    <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
+    <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
+  </div>
+
+</article>
+    `
+  },
+
+  // ──────────────────────────────────────────────
+  //  POST 2  |  식육가공업 정의 및 식육포장처리업 비교 (인천 염지 닭 사례)
+  // ──────────────────────────────────────────────
+  {
+    id: 2,
+    category: 2,
+    title: "식육가공업이란 무엇인가요? 식육포장처리업과 같은 업종이라고 생각하셨다면 꼭 읽어보세요",
+    summary: "염지·양념·가열 등 가공 행위가 있으면 식육가공업, 절단·포장만 하면 식육포장처리업입니다. 두 업종을 같은 것으로 알고 잘못 준비하는 사례가 실제로 있습니다. 인천 염지 닭 사례와 함께 핵심 차이점을 정리합니다.",
+    date: "2026-07-01",
+    tags: ["식육가공업", "식육포장처리업", "축산물위생관리법", "해썹인증", "염지닭허가", "지엘행정사사무소"],
+    thumbnail: "",
+    body: `
+<article class="post-body">
+
+  <section class="intro-box" style="margin-bottom:40px;padding:22px 24px;">
+    <p style="margin:0;font-size:15px;font-style:italic;color:#3a4a6a;">
+      "염지 닭을 생산해서 납품하고 싶은데, 식육 관련 허가 받으면 되는 거 아닌가요?"
+    </p>
+    <p style="margin-top:18px;margin-bottom:0;">
+      상담 전화에서 꽤 자주 듣는 질문입니다.
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      대부분의 분들이 식육가공업과 식육포장처리업을 <strong>같은 업종</strong>으로 알고 계시는데요.
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      결론부터 말씀드리면, 두 업종은 이름은 비슷하지만 <strong>법적으로 완전히 다른 업종</strong>입니다.
+    </p>
+    <p style="margin-top:12px;margin-bottom:0;">
+      특히 양념을 하거나 염지 처리를 하는 제품을 만들고 싶다면,<br>
+      <strong>어떤 허가를 받아야 하는지부터 정확히 짚고 가야 합니다.</strong>
+    </p>
+  </section>
+
+  <div class="standard-box" style="margin-bottom:48px;">
+    <p style="margin:0;line-height:2.0;">
+      💡 <strong>핵심 한 줄 정리</strong><br><br>
+      식육에 <strong>양념·염지·가열 등 가공 행위</strong>가 들어간다면 → <strong>식육가공업</strong><br>
+      단순히 자르고 포장만 한다면 → <strong>식육포장처리업</strong><br><br>
+      이 차이를 모르고 잘못된 업종으로 허가를 냈다가 처음부터 다시 준비하게 되는 경우가 실제로 있습니다.
+    </p>
+  </div>
+
+
+  <h2>1. 식육가공업이란? – 법적 정의</h2>
+
+  <p style="margin-top:20px;">
+    <strong>식육가공업</strong>은 「축산물 위생관리법」 제2조 및 제21조에 따라 <strong>허가</strong>를 받아야 하는 영업입니다.
+  </p>
+  <p style="margin-top:14px;">법령상 정의는 이렇습니다.</p>
+
+  <div class="standard-box" style="margin:16px 0 22px;padding:18px 22px;">
+    <p style="margin:0;font-size:14px;color:#2a3a5a;line-height:2.0;">
+      "식육가공품을 만들거나, 식육 또는 포장육을 원료로 가공한 제품을 <strong>제조·가공하는 영업</strong>"
+    </p>
+  </div>
+
+  <p>여기서 핵심은 <strong>'가공'</strong>이라는 단어입니다.</p>
+  <p style="margin-top:12px;">
+    단순한 절단이나 포장이 아니라, <strong>염지·양념·가열·훈연·건조·성형</strong> 등의 처리 공정이 포함된 것을 말합니다.
+  </p>
+  <p style="margin-top:12px;">
+    쉽게 말씀드리면, 원료 고기에 <strong>무언가를 더하거나 변형시키는 과정</strong>을 거쳐 새로운 형태의 제품을 만들어내는 것입니다.
+  </p>
+  <p style="margin-top:12px;margin-bottom:36px;">
+    염지 닭, 소시지, 햄, 육포, 양념갈비, 패티 같은 제품들이 모두 여기에 해당합니다.
+  </p>
+
+
+  <h2>2. 식육포장처리업이란? – 법적 정의</h2>
+
+  <p style="margin-top:20px;">
+    <strong>식육포장처리업</strong>은 같은 법에 따라 <strong>허가</strong>를 받아야 하는 영업이지만, 할 수 있는 것의 범위가 다릅니다.
+  </p>
+  <p style="margin-top:14px;">법령상 정의는 이렇습니다.</p>
+
+  <div class="standard-box" style="margin:16px 0 22px;padding:18px 22px;">
+    <p style="margin:0;font-size:14px;color:#2a3a5a;line-height:2.0;">
+      "포장육을 만드는 영업"<br>
+      <span style="font-size:12px;color:#6b7280;">※ 포장육 : 식육을 절단하거나 분쇄해서 위생적으로 포장한 것</span>
+    </p>
+  </div>
+
+  <p>원료 고기를 <strong>자르고 포장하는 것</strong>이 이 업종이 할 수 있는 범위입니다.</p>
+  <p style="margin-top:12px;margin-bottom:36px;">
+    양념을 더하거나, 염지액에 담그거나, 가열·훈연 공정을 거치는 것은 <strong>식육포장처리업의 범위에 포함되지 않습니다.</strong>
+  </p>
+
+
+  <h2>3. 두 업종, 핵심 차이점만 비교해 보면</h2>
+
+  <p style="margin-top:20px;margin-bottom:22px;">
+    두 업종의 가장 큰 차이는 딱 하나입니다. <strong>가공 행위가 있느냐, 없느냐</strong>입니다.
+  </p>
+
+  <!-- PC 테이블 -->
+  <div class="resp-table standard-box" style="padding:0;overflow:hidden;margin:0 0 20px;">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;line-height:1.9;">
+      <thead>
+        <tr>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;width:26%;">구분</th>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;">식육가공업</th>
+          <th style="background:#1a2e5a;color:#fff;padding:12px 14px;text-align:center;">식육포장처리업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">할 수 있는 것</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">염지, 양념, 가열, 훈연, 건조, 성형 등<br>가공 공정 포함한 제품 제조</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">원료 식육을<br>절단·분쇄하여 포장</td>
+        </tr>
+        <tr style="background:#f8f9fd;">
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">가공 행위</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">✅ <strong>있음</strong><br><span style="font-size:12px;color:#6b7280;">원료에 변형을 가함</span></td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">❌ <strong>없음</strong><br><span style="font-size:12px;color:#6b7280;">절단·포장에 한정</span></td>
+        </tr>
+        <tr>
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;border-bottom:1px solid #e8ecf5;">대표 제품</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">염지 닭, 양념갈비, 소시지, 햄, 육포, 패티</td>
+          <td style="padding:12px 14px;border-bottom:1px solid #e8ecf5;color:#3a3a3a;">절단 포장육<br>(정육 트레이팩 등)</td>
+        </tr>
+        <tr style="background:#f8f9fd;">
+          <td style="padding:12px 14px;background:#f0f4ff;font-weight:700;color:#1a2e5a;text-align:center;">해썹(HACCP)</td>
+          <td style="padding:12px 14px;text-align:center;color:#3a3a3a;">✅ 의무 적용</td>
+          <td style="padding:12px 14px;text-align:center;color:#3a3a3a;">✅ 의무 적용</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 모바일 카드 -->
+  <div class="resp-cards" style="margin:0 0 20px;">
+    <div class="r-card">
+      <div class="r-head">식육가공업</div>
+      <div class="r-row"><div class="r-label">할 수 있는 것</div><div class="r-val">염지, 양념, 가열, 훈연, 건조, 성형 등 가공 공정 포함한 제품 제조</div></div>
+      <div class="r-row"><div class="r-label">가공 행위</div><div class="r-val">✅ 있음 (원료에 변형을 가함)</div></div>
+      <div class="r-row"><div class="r-label">대표 제품</div><div class="r-val">염지 닭, 양념갈비, 소시지, 햄, 육포, 패티</div></div>
+      <div class="r-row"><div class="r-label">해썹(HACCP)</div><div class="r-val">✅ 의무 적용</div></div>
+    </div>
+    <div class="r-card">
+      <div class="r-head">식육포장처리업</div>
+      <div class="r-row"><div class="r-label">할 수 있는 것</div><div class="r-val">원료 식육을 절단·분쇄하여 포장하는 것</div></div>
+      <div class="r-row"><div class="r-label">가공 행위</div><div class="r-val">❌ 없음 (절단·포장에 한정)</div></div>
+      <div class="r-row"><div class="r-label">대표 제품</div><div class="r-val">절단 포장육 (정육 트레이팩 등)</div></div>
+      <div class="r-row"><div class="r-label">해썹(HACCP)</div><div class="r-val">✅ 의무 적용</div></div>
+    </div>
+  </div>
+
+  <p>
+    <strong>고기에 무언가를 더하거나, 열을 가하거나, 형태를 바꾸는 공정이 하나라도 있다면</strong><br>
+    식육가공업 허가가 필요합니다.
+  </p>
+
+  <div class="standard-box" style="margin:22px 0 48px;">
+    <p style="margin:0;line-height:2.0;">
+      📌 <strong>염지</strong>는 소금·향신료 등을 고기에 스며들게 하는 처리로, <strong>가공 행위에 해당</strong>합니다.<br><br>
+      따라서 <strong>염지 닭을 생산·납품하려면 식육포장처리업이 아닌 식육가공업 허가</strong>를 받아야 합니다.
+    </p>
+  </div>
+
+
+  <h2>4. 식육가공업은 해썹(HACCP) 의무 업종입니다</h2>
+
+  <p style="margin-top:20px;">
+    식육가공업은 「축산물 위생관리법」 제9조에 따라 <strong>해썹(HACCP) 적용 의무 업종</strong>으로 지정되어 있습니다.
+  </p>
+  <p style="margin-top:12px;margin-bottom:26px;">
+    허가를 받은 후 반드시 해썹 인증을 취득해야 합니다.
+  </p>
+
+  <h3>해썹(HACCP)이란?</h3>
+  <p style="margin-top:14px;">
+    해썹은 <strong>Hazard Analysis and Critical Control Points</strong>의 약자입니다.<br>
+    우리말로는 <strong>'위해요소 중점관리기준'</strong>이라고 합니다.
+  </p>
+
+  <div class="standard-box" style="margin:16px 0 22px;padding:18px 22px;">
+    <p style="margin:0;line-height:2.0;color:#2a3a5a;">
+      식품을 만드는 <strong>전 과정에서 위험이 생길 수 있는 지점을 미리 찾아내고,</strong><br>
+      그 지점을 집중적으로 관리하는 국제적인 식품 안전 시스템입니다.
+    </p>
+  </div>
+
+  <p>
+    식육가공업처럼 원료 고기를 직접 가공해서 제품을 만드는 업종은 살모넬라, 리스테리아 같은 식중독균 오염 위험이 높습니다.
+  </p>
+  <p style="margin-top:12px;margin-bottom:40px;">
+    이 때문에 법적으로 <strong>해썹 인증이 의무화</strong>되어 있습니다.
+  </p>
+
+
+  <h2>5. 실제 사례 – 인천 가금류(염지 닭) 생산 준비 업체 이야기</h2>
+
+  <div class="case-box-gold standard-box" style="margin:22px 0 30px;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
+    <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">📌 사례 개요</h3>
+    <p style="margin:0;line-height:2.1;font-size:14px;color:#4a3a00;">
+      업종 목적 : 가금류(염지 닭) 제조·납품<br>
+      위치 : 인천<br>
+      상담 전 인식 : 식육가공업과 식육포장처리업이 같은 업종이라고 알고 있었음<br>
+      상담 후 결과 : 식육가공업 허가 취득 + 해썹 인증 완료
+    </p>
+  </div>
+
+  <p>
+    인천에서 가금류(염지 닭) 생산을 준비 중이던 업체가 저희 사무소에 상담을 요청해 오셨습니다.
+  </p>
+  <p style="margin-top:14px;">
+    식육 관련 허가가 필요하다는 것은 알고 계셨는데, 식육가공업과 식육포장처리업을 <strong>같은 업종</strong>으로 알고 계셔서 어느 쪽으로 진행해야 할지 파악하지 못한 상태였습니다.
+  </p>
+  <p style="margin-top:14px;">
+    저희가 상담에서 먼저 확인한 것은 <strong>어떤 제품을 어떤 공정으로 만들 것이냐</strong>였습니다.
+  </p>
+  <p style="margin-top:14px;">
+    말씀하신 염지 닭은 닭고기에 염지액을 주입하거나 침지하는 공정이 들어가는 제품입니다.<br>
+    이는 가공 행위에 해당하기 때문에, <strong>식육가공업 허가 대상</strong>임을 안내드렸습니다.
+  </p>
+
+  <div class="case-box-gold standard-box" style="margin:24px 0;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
+    <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">💬 상담 당시 실제로 드린 말씀</h3>
+    <p style="margin:0;font-size:14px;line-height:2.2;color:#5a4200;font-style:italic;">
+      "염지는 단순 포장이 아니라 원료 고기에 직접적인 변형을 가하는 공정입니다.<br>
+      식육포장처리업으로는 이 제품을 생산할 수 없습니다.<br><br>
+      처음부터 식육가공업으로 준비하셔야 하고, 해썹 인증도 함께 준비하셔야 합니다.<br>
+      두 가지를 처음부터 병행해서 진행하는 것이 시간도 비용도 절약됩니다."
+    </p>
+  </div>
+
+  <p>
+    이후 식육가공업 허가 절차와 해썹 준비를 함께 진행했고, 최종적으로 <strong>허가 취득과 해썹 인증을 모두 완료</strong>하셨습니다.
+  </p>
+  <p style="margin-top:14px;margin-bottom:28px;">
+    만약 처음부터 식육포장처리업으로 잘못 진행했다면, 허가가 나더라도 염지 닭 생산은 불가능하고 결국 처음부터 다시 해야 하는 상황이 됩니다.
+  </p>
+
+  <div class="result-box" style="background:#f0f4ff;border-left:4px solid #1a2e5a;border-radius:0 8px 8px 0;padding:16px 20px;font-size:14px;color:#2a3a5a;margin:0 0 48px;line-height:2.1;">
+    <strong>✅ 진행 결과</strong><br>
+    업종 : 식육가공업<br>
+    품목 : 가금류 식육가공품 (염지 닭)<br>
+    소재지 : 인천<br>
+    → 식육가공업 허가 취득 + 해썹(HACCP) 인증 완료
+  </div>
+
+
+  <h2>🙋 자주 묻는 질문 (FAQ)</h2>
+
+  <div class="faq-box" style="margin-top:22px;margin-bottom:48px;">
+
+    <div class="faq-item">
+      <p class="faq-q">양념육도 식육가공업 허가가 필요한가요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        네, 필요합니다.<br>
+        원료 식육에 양념·소스류를 혼합하거나 염지 처리를 하는 것은 가공 행위에 해당합니다.<br>
+        양념갈비, 양념돼지갈비, 염지 닭 등은 모두 식육가공업 허가 대상 제품입니다.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">닭고기나 오리고기도 식육가공업 허가로 제조할 수 있나요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        네, 가능합니다.<br>
+        법령상 식육의 범위에는 소·돼지뿐 아니라 닭·오리·칠면조 등 가금류도 포함됩니다.<br>
+        가금류를 원료로 염지·가열 등의 공정을 거친 제품을 제조하려면 동일하게 식육가공업 허가를 받아야 합니다.
+      </p>
+    </div>
+
+    <div class="faq-item">
+      <p class="faq-q">식육가공업 허가 후 해썹 인증까지 얼마나 걸리나요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        업체 상황에 따라 다르지만, 시설 준비 기간을 포함해 통상 <strong>4~6개월</strong> 정도를 예상하시면 됩니다.<br>
+        허가와 해썹 준비를 처음부터 병행하면 전체 일정을 단축하는 데 유리합니다.
+      </p>
+    </div>
+
+    <div class="faq-item" style="margin-bottom:0;">
+      <p class="faq-q">온라인이나 배달로 염지 닭을 판매하려는데, 그래도 허가가 필요한가요?</p>
+      <p class="faq-a" style="line-height:2.0;">
+        네, 판매 방식이나 규모에 관계없이 염지 닭을 직접 제조해서 판매한다면 식육가공업 허가가 필요합니다.<br>
+        무허가 영업은 법적 처벌 대상이 될 수 있으니 사전에 반드시 확인하시기 바랍니다.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="cta-box" style="padding:34px 22px;">
+    <p class="cta-title">🥩 식육가공업 허가 · 해썹 인증, 업종 판단부터 함께합니다</p>
+    <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
+    <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
+    <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
+  </div>
+
+</article>
+    `
+  },
+
+  // ──────────────────────────────────────────────
+  //  POST 1  |  식품제조가공업 정의 및 즉석판매제조업 비교 (성남시 소스 사례)
+  // ──────────────────────────────────────────────
+  {
+    id: 1,
+    category: 1,
+    title: "식품제조가공업의 법적 정의와 유통의 본질, 성남 소스 가공 사례로 쉽게 이해하기",
+    summary: "식품위생법 시행령에 따른 식품제조가공업의 정확한 정의와 핵심 특징을 알아봅니다. 성남 소스 제조 사례를 통해 즉석판매제조가공업과의 유통 범위(B2B, B2C) 차이점을 명확히 정리해 드립니다.",
+    date: "2026-06-30",
+    tags: ["식품제조가공업", "식품위생법", "영업등록", "즉석판매제조가공업", "지엘행정사사무소"],
+    thumbnail: "",
+    // 이 글에는 이미지 슬롯 2개가 있습니다. (본문의 slot-img-wrap 참고)
+    // "이미지 관리" 패널에서 slot-img-wrap과 매칭되는 이름으로 등록해두면
+    // 관리자 패널에 라벨/설명이 표시됩니다.
+    imageSlots: [
+      { key: "post1-compare", label: "업종 비교 이미지", desc: "식품제조가공업 vs 즉석판매제조가공업 B2B/B2C 비교" },
+      { key: "post1-cert", label: "영업등록증 사진", desc: "성남 사례 발급 완료된 식품제조가공업 영업등록증" }
+    ],
+    body: `
+<article class="post-body">
+
+  <section class="intro-box" style="margin-bottom:35px;padding:20px 22px;">
+    <p style="margin-bottom:14px;">
+      "식품(소스 등)을 만들어 주변 식당들과 마트에 납품하려고 하는데, 지금 가지고 있는 일반음식점이나 즉석판매제조업 허가증으로 바로 유통해도 될까요?"
+    </p>
+    <p style="margin-bottom:0;">
+      결론부터 아주 명확하게 말씀드리면, <strong>단 1팩이라도 그렇게 유통하시면 식품위생법 위반입니다.</strong>
+    </p>
+    <p style="margin-top:14px;margin-bottom:0;">
+      내가 만든 식품을 마트, 식당, 도매업자 등 '판매를 목적으로 하는 다른 영업자'에게 유통하는 행위는 오직 식품위생법상 <strong>'식품제조가공업 영업등록'</strong>을 마친 시설에서만 가능하기 때문입니다.
+    </p>
+  </section>
+
+  <p style="margin-bottom:28px;">
+    안녕하세요, 식품·축산물 가공업 인허가와 HACCP인증 전문 팀입니다.
+  </p>
+  <p style="margin-bottom:36px;">
+    식품 사업의 규모가 커져 본격적인 유통망을 뚫거나 대량 납품을 계획하실 때, 대표님들이 가장 먼저 마주하는 기본 과제가 바로 정확한 <strong>'업종의 정의'</strong>를 정립하는 것입니다.
+  </p>
+
+
+  <h2>1. 식품위생법 시행령으로 보는 '식품제조·가공업'의 정확한 정의</h2>
+
+  <p style="margin-bottom:22px;margin-top:18px;">
+    <strong>「식품위생법 시행령」 제21조</strong>에 명시된 식품제조·가공업은 말 그대로 식품을 전문적으로 제조하고 가공하는 영업을 뜻합니다.
+  </p>
+  <p style="margin-bottom:32px;">
+    단순히 조리 기구로 음식을 만드는 것이 아닌, 하나의 완전한 '상품'으로서 유통하는 업종입니다. 이 업종이 가진 법적 특징은 크게 두 가지로 요약됩니다.
+  </p>
+
+  <div class="standard-box" style="margin-bottom:36px;padding:22px 24px;">
+    <h3 style="margin-bottom:10px;">① 유통 및 직접 판매 (B2B, B2C)</h3>
+    <p style="margin-bottom:18px;">
+      식품제조·가공업자가 적법한 제조 시설에서 가공하여 기준에 맞는 표시(원재료명, 소비기한 등)를 완료한 제품은 대형마트, 식당, 도매업소 등 <strong>다른 판매처로 제한 없이 유통하여 판매(B2B)</strong>할 수 있습니다.
+    </p>
+    <p style="margin-bottom:0;">
+      이와 동시에, 별도의 유통 매장을 거치지 않고 해당 가공 공장(영업장)에서 최종 소비자에게 직접 제품을 판매(B2C)하는 행위 역시 법적으로 허용됩니다.
+    </p>
+
+    <h3 style="margin-top:24px;margin-bottom:10px;">② 추가 영업신고 면제 (행정적 편의성)</h3>
+    <p style="margin-bottom:18px;">
+      종종 "공장에서나 온라인에서 일반 소비자에게 소스를 직접 팔고 싶은데, 즉석판매제조가공업 신고를 추가로 해야 하나요?"라고 물으시는 분들이 계십니다.
+    </p>
+    <p style="margin-bottom:0;">
+      식품위생법에 따라 식품제조·가공업 영업등록을 마친 자는, <strong>최종 소비자에게 직접 판매하더라도 별도의 즉석판매제조·가공업 신고를 하지 않아도 됩니다.</strong> 등록증 하나로 도매 유통과 소매 판매를 동시에 해결할 수 있는 셈이죠.
+    </p>
+  </div>
+
+
+  <h2>2. 핵심 비교: 식품제조가공업 VS 즉석판매제조가공업 유통 범위</h2>
+
+  <p style="margin-bottom:22px;margin-top:18px;">
+    두 업종의 차이를 이해하는 본질은 바로 <strong>'판매 대상 및 형태 (납품 가능 여부)'</strong>에 있습니다. 내가 만든 식품을 누구에게 판매할 것이냐에 따라 가야 할 길이 완전히 달라집니다.
+  </p>
+
+  <div class="slot-img-wrap" data-img-slot="post1-compare"></div>
+
+  <h3 style="margin-bottom:14px;">💡 판매 대상 및 형태에 따른 업종 분리 기준</h3>
+  <ul style="margin-bottom:36px;padding-left:18px;">
+    <li style="margin-bottom:14px;">
+      <strong>식품제조·가공업:</strong> 식품을 다른 식당, 프랜차이즈 가맹점, 마트, 도매업소 등 <em>판매를 목적으로 하는 다른 영업자에게 납품 및 유통(B2B)</em>할 수 있으며, 온라인 등으로 최종 소비자에게 직접 판매(B2C)하는 것도 모두 허용됩니다.
+    </li>
+    <li style="margin-bottom:0;">
+      <strong>즉석판매제조·가공업:</strong> 내 영업장 안에서 또는 온라인으로 '최종 소비자'에게 직접 판매하거나, 개인 고객의 주문을 받아 택배로 배달(B2C)하는 것만 가능합니다. <strong>다른 식당이나 마트에 납품(B2B)하는 행위는 원칙적으로 금지</strong>됩니다. 다만, 과자·빵·떡류에 한해서만 당일 제조·판매 조건으로 일부 유통이 예외 허용됩니다.
+    </li>
+  </ul>
+
+
+  <h2>3. 실제 사례로 보는 업종 정의의 중요성</h2>
+
+  <p style="margin-bottom:22px;margin-top:18px;">
+    최근 경기도 성남시 중원구에서 특제 갈비 소스와 찌개 양념장을 생산하고자 했던 대표님의 사례입니다. 처음에는 시설 기준이 덜 까다로운 즉석판매제조가공업으로 편하게 시작하려고 하셨습니다.
+  </p>
+  <p style="margin-bottom:22px;">
+    그러나 상담 과정에서 대표님의 핵심 비즈니스 모델이 <strong>'근교의 가맹점 식당들과 식자재 마트 납품(B2B)'</strong>에 있다는 것을 확인하고, 즉석판매제조가공업으로 진행할 경우 추후 유통 자체가 위법이 됨을 명확히 짚어드렸습니다.
+  </p>
+  <p style="margin-bottom:36px;">
+    결국 초기부터 방향을 틀어 지식산업센터 내에 시설기준을 맞춘 <strong>식품제조가공업 영업등록</strong>으로 안전하게 진행하셨고, 현재는 아무런 법적 제약 없이 성남 공장에서 생산된 소스를 성공적으로 납품하고 계십니다.
+  </p>
+
+  <div class="slot-img-wrap" data-img-slot="post1-cert"></div>
+
+
+  <h2>🙋 식품제조가공업 자주하는 질문 FAQ</h2>
+
+  <div class="faq-box" style="margin-top:20px;margin-bottom:36px;">
+    <div class="faq-item" style="margin-bottom:12px;">
+      <p class="faq-q">소스를 만들어 식당에 납품하려는데, 무조건 '공장' 건물이어야 하나요?</p>
+      <p class="faq-a" style="line-height:1.9;">반드시 흔히 생각하는 거대한 독채 공장일 필요는 없습니다. 건축물대장상 용도가 '제2종 근린생활시설(제조업소)'로 되어 있다면 일반 상가 건물에서도 시설 기준만 맞추면 얼마든지 영업등록이 가능합니다. 단, 위반건축물이 없어야 하므로 부동산 계약 전 확인이 필수적입니다.</p>
+    </div>
+    <div class="faq-item" style="margin-bottom:0;">
+      <p class="faq-q">그럼, 다음 등록 절차는 어떻게 되나요?</p>
+      <p class="faq-a" style="line-height:1.9;">건축물 용도 등이 적합하면 교차 오염을 방지하는 작업장 설치, 창고 설치, 영업 등록 신청에 필요한 서류를 준비하여 관할 지자체에 식품제조가공업 등록 신청을 하면 됩니다.</p>
+    </div>
+  </div>
+
+  <h2>✅ 입지 검토부터 함께하세요</h2>
+
+  <p style="margin-bottom:22px;margin-top:18px;">
+    식품 인허가는 초기 업종 정의를 잘못 내리거나 입지 검토를 잘못 했다가 <em>큰 낭패를 보게</em> 될 수 있습니다.
+  </p>
+  <p style="margin-bottom:36px;">
+    저희 식품·축산물 가공업 인허가와 HACCP인증 팀은 대표님의 소중한 시간과 자본금을 단 하루도 낭비하지 않도록 정확하고 신속하게 업무 대행을 합니다. 어려운 행정 처리는 전문가에게 맡기시고 사업에만 전념하세요.
+  </p>
+
+  <div class="cta-box" style="padding:34px 22px;">
+    <p class="cta-title">🏢 식품제조가공업 영업등록 · 전국 제조소 입지 무료 사전 검토</p>
+    <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
+    <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
+    <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
+  </div>
+
+</article>
+    `
   }
-
-  ghConfig = { owner, repo, branch, token };
-  localStorage.setItem('gh_config', JSON.stringify(ghConfig));
-  renderImgManagerBody();
-}
-
-/* ── GitHub API 헬퍼 ── */
-async function ghApi(path, options = {}) {
-  const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${path}`;
-  return fetch(url, {
-    ...options,
-    headers: {
-      'Authorization': `token ${ghConfig.token}`,
-      'Accept': 'application/vnd.github+json',
-      ...(options.headers || {})
-    }
-  });
-}
-
-async function getFileSha(path) {
-  try {
-    const res = await ghApi(`${path}?ref=${ghConfig.branch}`);
-    if (res.status === 200) {
-      const data = await res.json();
-      return data.sha;
-    }
-  } catch (e) { /* 파일이 없으면 무시 */ }
-  return null;
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result.split(',')[1]);
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
-}
-
-/* ── 이미지 업로드 ── */
-async function handleSlotUpload(slotKey, inputEl) {
-  const file = inputEl.files[0];
-  if (!file) return;
-  if (!ghConfig || !ghConfig.token) { alert('먼저 GitHub 연동 설정을 완료해주세요.'); return; }
-
-  const previewEl = document.getElementById(`preview-${slotKey}`);
-  if (previewEl) previewEl.innerHTML = `<span class="no-img">업로드 중...</span>`;
-
-  try {
-    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
-    const imgPath = `images/${slotKey}.${ext}`;
-    const base64 = await fileToBase64(file);
-
-    const existingSha = await getFileSha(imgPath);
-    const putRes = await ghApi(imgPath, {
-      method: 'PUT',
-      body: JSON.stringify({
-        message: `이미지 업로드: ${slotKey}`,
-        content: base64,
-        branch: ghConfig.branch,
-        ...(existingSha ? { sha: existingSha } : {})
-      })
-    });
-    if (!putRes.ok) {
-      const errData = await putRes.json().catch(() => ({}));
-      throw new Error(errData.message || '이미지 업로드 실패');
-    }
-
-    const rawUrl = `https://raw.githubusercontent.com/${ghConfig.owner}/${ghConfig.repo}/${ghConfig.branch}/${imgPath}`;
-    imageMap[slotKey] = rawUrl + `?v=${Date.now()}`;
-    await saveImageMap();
-
-    applyImageSlots();
-    renderImgManagerBody();
-  } catch (e) {
-    alert('업로드 중 오류가 발생했습니다.\n' + e.message);
-    renderImgManagerBody();
-  }
-}
-
-/* ── 이미지 삭제 (매핑만 제거, 파일은 저장소에 남습니다) ── */
-async function handleSlotDelete(slotKey) {
-  if (!confirm('이 슬롯에서 이미지를 제거하시겠습니까?\n(저장소의 이미지 파일 자체는 삭제되지 않습니다)')) return;
-  try {
-    delete imageMap[slotKey];
-    await saveImageMap();
-    applyImageSlots();
-    renderImgManagerBody();
-  } catch (e) {
-    alert('삭제 중 오류가 발생했습니다.\n' + e.message);
-  }
-}
-
-/* ── image-map.json 저장 ── */
-async function saveImageMap() {
-  const path = 'image-map.json';
-  const sha = await getFileSha(path);
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(imageMap, null, 2))));
-  const res = await ghApi(path, {
-    method: 'PUT',
-    body: JSON.stringify({
-      message: '이미지 맵 업데이트',
-      content,
-      branch: ghConfig.branch,
-      ...(sha ? { sha } : {})
-    })
-  });
-  if (!res.ok) {
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.message || '이미지 맵 저장 실패');
-  }
-}
-
-/* ─────────────────────────────────────────────
-   START
-───────────────────────────────────────────── */
-init();
-</script>
-</body>
-</html>
+];
