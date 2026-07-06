@@ -123,6 +123,35 @@ const RESPONSIVE_STYLE = `
 `;
 
 const POSTS = [
+  {
+    id: 6,
+    category: 2,
+    title: "식육가공업이란 무엇인가요?",
+    summary: "식육가공업은 식육가공품을 만드는 업종으로, 원료육에 염지·양념·가열 등 가공행위를 하여 유통하려면 식육가공업 허가를 받아야 합니다.",
+    date: "2026-07-06",
+    tags: ["식육가공업","축산물가공업","해썹인증","염지닭제조","양념육제조"],
+    thumbnail: "",
+    body: `
+${RESPONSIVE_STYLE}
+<article class="post-body">
+<div class="intro-box" style="margin-bottom:35px;padding:22px 24px;">
+  <p style="margin:0;font-size:15px;font-style:italic;color:#3a4a6a;">
+    "양념육(양념갈비)을 생산해서 납품하고 싶은데, 어떤 업종의 허가가 필요한가요?"
+  </p>
+  <p style="margin-top:14px;margin-bottom:0;">
+    상담을 하다보면 꽤 자주 듣는 질문입니다. 결론부터 말씀드리면, 식육가공업 허가를 받아야 하고, 이 업종은 해썹(HACCP) 의무 업종으로, 해썹 인증까지 받아야 본격적으로 영업이 가능해집니다.
+  </p>
+</div><div class="standard-box" style="margin:20px 0;padding:20px 22px;">
+  <p style="margin:0;line-height:2.0;">
+    💡 <strong>핵심 정리</strong><br><br>
+    여기에 핵심 내용을 정리하세요.
+  </p>
+</div>
+
+
+</article>
+    `
+  },
   // ──────────────────────────────────────────────
   //  POST 3  |  즉석판매제조가공업 - 온라인·매장 판매 (인천 식당 사례)
   // ──────────────────────────────────────────────
