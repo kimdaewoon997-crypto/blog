@@ -7,7 +7,7 @@
   <!-- SEO 메타태그 (JS로 동적 교체됨) -->
   <title>지엘행정사사무소 | 식품·축산물 인허가 전문 블로그</title>
   <meta id="meta-desc" name="description"
-    content="인천 남동구 지엘행정사사무소 공식 블로그. 식품제조가공업 등록, 축산물가공업 허가, HACCP 인증 등 인허가 및 공장 등록 실무 정보를 제공합니다." />
+    content="인천 남동구 지엘행정사사무소 공식 블로그. 식품제조가공업, 식육가공업, HACCP 인증 등 축산물·식품 인허가 실무 정보를 제공합니다." />
 
   <!-- Open Graph -->
   <meta id="og-title"   property="og:title"       content="지엘행정사사무소 블로그" />
@@ -19,7 +19,7 @@
   <!-- 네이버 C-Rank / AI 브리핑 크롤러 힌트 -->
   <meta name="robots" content="index, follow" />
   <meta name="author" content="지엘행정사사무소 김대운 행정사" />
-  <meta name="keywords" content="식품허가, 축산물가공업, HACCP, 해썹인증, 식품제조가공업, 축산물위생관리법, 인천 행정사, 공장등록" />
+  <meta name="keywords" content="식품허가, 식육가공업, HACCP, 해썹, 식품제조가공업, 축산물위생관리법, 인천 행정사" />
 
   <!-- Schema.org LocalBusiness -->
   <script type="application/ld+json">
@@ -609,6 +609,225 @@
     @media (max-width: 480px) {
       .post-detail-wrap { padding: 16px 12px; }
       .post-body h2 { font-size: 17px; }
+    }
+
+    /* ─────────────────────────────────────────
+       이미지 관리 패널
+    ───────────────────────────────────────── */
+    #img-manager-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin: 0 0 0 12px;
+      padding: 6px 14px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      opacity: 0.75;
+      transition: opacity .15s;
+    }
+    #img-manager-toggle:hover { opacity: 1; }
+
+    #img-manager {
+      display: none;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin: 16px 0 24px;
+    }
+    #img-manager.open { display: block; }
+
+    .img-manager-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .img-manager-head h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .img-manager-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    .img-slot-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .img-slot-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .img-slot-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f8f9fd;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      gap: 10px;
+    }
+    .img-slot-label { flex: 1; }
+    .img-slot-desc {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .img-slot-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .btn-upload-img {
+      padding: 5px 12px;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-upload-img:hover { background: #b8952f; }
+    .btn-del-img {
+      padding: 5px 10px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-del-img:hover { background: #fca5a5; }
+    .img-slot-preview {
+      padding: 10px 14px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .img-slot-preview img {
+      max-height: 80px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .img-slot-preview .no-img {
+      font-size: 12px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .img-slot-preview .has-img {
+      font-size: 12px;
+      color: #16a34a;
+      font-weight: 700;
+    }
+
+    /* 본문 내 슬롯 이미지 */
+    .post-body img.slot-img {
+      width: 100%;
+      border-radius: 8px;
+      margin: 24px 0;
+      display: block;
+    }
+    .post-body .slot-img-wrap {
+      margin: 24px 0;
+      text-align: center;
+    }
+    .post-body .slot-img-wrap img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .post-body .slot-img-wrap .slot-caption {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* 잠금 모달 */
+    #img-lock-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    #img-lock-modal.open { display: flex; }
+    .img-lock-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px 24px;
+      width: 300px;
+      max-width: 90vw;
+      text-align: center;
+    }
+    .img-lock-box h3 { font-size: 16px; margin-bottom: 6px; color: var(--navy); }
+    .img-lock-box p  { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+    .img-lock-box input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: 4px;
+    }
+    .img-lock-box input:focus { outline: none; border-color: var(--navy); }
+    .img-lock-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--navy);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .img-lock-cancel {
+      background: none;
+      border: none;
+      font-size: 13px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .img-lock-error {
+      font-size: 13px;
+      color: #dc2626;
+      margin-top: 6px;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .img-slot-header { flex-direction: column; align-items: flex-start; }
+      .img-slot-actions { margin-top: 6px; }
     }
   </style>
 </head>
