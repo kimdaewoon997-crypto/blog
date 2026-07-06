@@ -478,7 +478,7 @@
     }
     .tl-item p { font-size: 13px; color: var(--muted); margin: 0; }
 
-    /* FAQ */
+    /* FAQ (아코디언) */
     .faq-box { margin: 20px 0; }
     .faq-item {
       border: 1px solid var(--border);
@@ -489,14 +489,30 @@
     .faq-q {
       background: #f8fafc;
       padding: 12px 16px;
+      padding-right: 32px;
       font-size: 14px; font-weight: 700;
       color: var(--navy); margin: 0;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
     }
+    .faq-q::after {
+      content: '+';
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      font-weight: 400;
+      font-size: 16px;
+      color: var(--muted);
+    }
+    .faq-item.faq-open .faq-q::after { content: '–'; }
     .faq-a {
       padding: 12px 16px;
       font-size: 13px; color: var(--muted);
       margin: 0; line-height: 1.65;
+      display: none;
     }
+    .faq-item.faq-open .faq-a { display: block; }
 
     /* CTA box */
     .cta-box {
@@ -733,6 +749,7 @@
       white-space: nowrap;
     }
     .btn-upload-img:hover { background: #b8952f; }
+    .btn-upload-img:disabled { opacity: .6; cursor: default; }
     .btn-del-img {
       padding: 5px 10px;
       background: #fee2e2;
@@ -855,6 +872,115 @@
       .img-slot-actions { margin-top: 6px; }
       #img-manager-toggle { right: 12px; bottom: 76px; padding: 9px 14px; font-size: 12px; }
     }
+
+    /* ─────────────────────────────────────────
+       글 작성 패널 (신규)
+    ───────────────────────────────────────── */
+    #write-manager-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      position: fixed;
+      right: 20px;
+      bottom: 146px;
+      z-index: 260;
+      padding: 10px 16px;
+      background: #8a6400;
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.28);
+      opacity: 0.92;
+      transition: opacity .15s, transform .15s;
+    }
+    #write-manager-toggle:hover { opacity: 1; transform: translateY(-1px); }
+
+    #write-manager-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 390;
+    }
+    #write-manager-overlay.open { display: block; }
+
+    #write-manager {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: -460px;
+      width: 440px;
+      max-width: 94vw;
+      height: 100dvh;
+      overflow-y: auto;
+      background: #fff;
+      border-left: 1.5px solid var(--border);
+      padding: 20px;
+      margin: 0;
+      z-index: 400;
+      box-shadow: -6px 0 24px rgba(0,0,0,.18);
+      transition: right .25s ease;
+    }
+    #write-manager.open { display: block; right: 0; }
+
+    .wm-field { margin-bottom: 14px; }
+    .wm-field label {
+      display: block;
+      font-size: 12px; font-weight: 700;
+      color: var(--navy); margin-bottom: 5px;
+    }
+    .wm-field input[type="text"],
+    .wm-field select,
+    .wm-field textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      resize: vertical;
+      background: #fff;
+      color: var(--text);
+    }
+    .wm-field input:focus,
+    .wm-field select:focus,
+    .wm-field textarea:focus { outline: none; border-color: var(--navy); }
+    #write-body { font-family: 'Noto Sans KR', monospace; line-height: 1.6; }
+
+    .wm-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+    .tpl-btn {
+      padding: 6px 10px;
+      background: #f0f4ff;
+      color: var(--navy);
+      border: 1px solid #dbe3ff;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      line-height: 1.4;
+    }
+    .tpl-btn:hover { background: #dde5ff; }
+
+    .wm-notice {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 768px) {
+      #write-manager-toggle { right: 12px; bottom: 132px; padding: 9px 14px; font-size: 12px; }
+      #write-manager { width: 100%; max-width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -955,7 +1081,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     이미지 관리자 (토글 버튼 · 패널 · 잠금모달)
+     이미지 관리자 (토글 버튼 · 패널)
 ═══════════════════════════════════════════ -->
 <button id="img-manager-toggle" onclick="openImgManager()">🖼️ 이미지 관리</button>
 
@@ -968,9 +1094,81 @@
   <div id="img-manager-body"></div>
 </div>
 
+<!-- ═══════════════════════════════════════════
+     글 작성 관리자 (토글 버튼 · 패널) — 신규
+═══════════════════════════════════════════ -->
+<button id="write-manager-toggle" onclick="openWriteManager()">✍️ 글 작성</button>
+
+<div id="write-manager-overlay" onclick="closeWriteManager()"></div>
+<div id="write-manager">
+  <div class="img-manager-head">
+    <h3>✍️ 새 글 작성 · GitHub 자동 발행</h3>
+    <button class="img-manager-close" onclick="closeWriteManager()">✕</button>
+  </div>
+
+  <div id="write-manager-body">
+    <div class="wm-notice">
+      아래 내용을 입력하고 <strong>발행하기</strong>를 누르면, 저장소의 <code>posts.js</code>
+      맨 앞에 새 글이 자동으로 추가되어 GitHub에 커밋됩니다. 반영까지 1~2분 정도 걸릴 수 있습니다.
+    </div>
+
+    <div class="wm-field">
+      <label>카테고리</label>
+      <select id="write-category"></select>
+    </div>
+
+    <div class="wm-field">
+      <label>제목</label>
+      <input type="text" id="write-title" placeholder="글 제목을 입력하세요">
+    </div>
+
+    <div class="wm-field">
+      <label>요약글 (목록에 표시)</label>
+      <textarea id="write-summary" rows="2" placeholder="목록 화면에 보여줄 요약글을 입력하세요"></textarea>
+    </div>
+
+    <div class="wm-field">
+      <label>태그 (쉼표로 구분)</label>
+      <input type="text" id="write-tags" placeholder="예: 식품허가, HACCP, 지엘행정사사무소">
+    </div>
+
+    <div class="wm-field">
+      <label>본문 디자인 박스 삽입 · 이미지 삽입</label>
+      <div class="wm-toolbar">
+        <button type="button" class="tpl-btn" onclick="insertTemplate('intro')">🔷 도입부 박스</button>
+        <button type="button" class="tpl-btn" onclick="insertTemplate('standard')">💡 핵심 정리 박스</button>
+        <button type="button" class="tpl-btn" onclick="insertTemplate('case')">📌 사례 개요 박스</button>
+        <button type="button" class="tpl-btn" onclick="insertTemplate('result')">✅ 진행 결과 박스</button>
+        <button type="button" class="tpl-btn" onclick="insertTemplate('faq')">🙋 FAQ 박스</button>
+        <button type="button" class="tpl-btn" onclick="insertTemplate('cta')">📣 CTA 배너</button>
+        <label class="tpl-btn" id="body-img-btn" style="cursor:pointer;">
+          🖼️ 이미지 삽입
+          <input type="file" accept="image/*" id="write-img-input" style="display:none" onchange="handleBodyImageUpload(this)">
+        </label>
+      </div>
+    </div>
+
+    <div class="wm-field">
+      <label>본문 내용 (HTML)</label>
+      <textarea id="write-body" rows="16" placeholder="본문을 작성하거나 위 버튼으로 디자인 박스를 커서 위치에 삽입하세요"></textarea>
+    </div>
+
+    <button id="publish-btn" class="btn-upload-img" style="width:100%;padding:12px;font-size:14px;" onclick="publishPost()">
+      🚀 발행하기 (GitHub 자동 커밋)
+    </button>
+
+    <p style="margin-top:16px;text-align:right;">
+      <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm('write-manager-body')">⚙️ GitHub 연동 설정</a>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     공용 잠금 모달 (이미지 관리자 · 글 작성 공용)
+═══════════════════════════════════════════ -->
 <div id="img-lock-modal">
   <div class="img-lock-box">
-    <h3>🔒 이미지 관리자</h3>
+    <h3>🔒 관리자 인증</h3>
     <p>관리자 암호를 입력하세요</p>
     <input type="password" id="img-lock-input" placeholder="암호" />
     <button class="img-lock-btn" onclick="checkImgLock()">확인</button>
@@ -982,7 +1180,11 @@
 <!-- ═══════════════════════════════════════════
      SCRIPTS
 ═══════════════════════════════════════════ -->
-<script src="posts.js"></script>
+<script>
+  /* posts.js는 관리자 패널에서 계속 갱신되는 파일이므로,
+     매 방문 시 캐시를 우회해 항상 최신 버전을 불러옵니다. */
+  document.write('<script src="posts.js?t=' + Date.now() + '"><' + '/script>');
+</script>
 <script>
 /* ─────────────────────────────────────────────
    STATE
@@ -1025,6 +1227,14 @@ function init() {
   // 잠금 모달 엔터키 처리
   document.getElementById('img-lock-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') checkImgLock();
+  });
+
+  // FAQ 아코디언 (전역 위임 — 기존 글/새 글 모두 동일하게 동작)
+  document.addEventListener('click', (e) => {
+    const q = e.target.closest('.faq-q');
+    if (!q) return;
+    const item = q.closest('.faq-item');
+    if (item) item.classList.toggle('faq-open');
   });
 }
 
@@ -1307,24 +1517,16 @@ function escHtml(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function toBase64Unicode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function fromBase64Unicode(b64) {
+  return decodeURIComponent(escape(atob(b64.replace(/\n/g, ''))));
+}
+
 /* ═══════════════════════════════════════════════════════════
-   이미지 관리자 (GitHub 저장소 연동)
-   ─────────────────────────────────────────────────────────
-   동작 원리
-   1) 업로드한 이미지는 이 저장소(repo)의 images/ 폴더에 실제로
-      저장되고, image-map.json 파일에 "슬롯이름 → 이미지주소"가
-      기록됩니다. 즉 브라우저 저장(localStorage)이 아니라 GitHub
-      저장소 자체에 저장되므로, 홈페이지에 방문하는 모든 사람에게
-      동일하게 이미지가 보입니다.
-   2) 최초 1회, 우측 패널 하단의 "GitHub 연동 설정"에서
-      - GitHub 계정명(owner)
-      - 저장소 이름(repo)
-      - 브랜치명(보통 main)
-      - Personal Access Token (repo 쓰기 권한 필요)
-      를 입력해두면 그 다음부터는 업로드 버튼만 누르면 됩니다.
-   3) 암호창은 아무나 이미지가 바뀌지 않도록 막는 간단한 잠금
-      장치입니다. 아래 IMG_LOCK_PASSWORD 값을 원하는 암호로
-      바꿔서 사용하세요.
+   관리자 공용 잠금 (이미지 관리자 · 글 작성 공용)
 ═══════════════════════════════════════════════════════════ */
 
 const IMG_LOCK_PASSWORD = "gladmin1234"; // ← 원하는 암호로 변경하세요
@@ -1332,6 +1534,35 @@ const IMG_LOCK_PASSWORD = "gladmin1234"; // ← 원하는 암호로 변경하세
 let ghConfig = JSON.parse(localStorage.getItem('gh_config') || 'null');
 let imageMap = {};
 let imgManagerUnlocked = sessionStorage.getItem('img_unlocked') === '1';
+let pendingUnlockAction = null;
+
+function requireUnlock(action) {
+  if (imgManagerUnlocked) {
+    action();
+  } else {
+    pendingUnlockAction = action;
+    document.getElementById('img-lock-modal').classList.add('open');
+    document.getElementById('img-lock-input').value = '';
+    document.getElementById('img-lock-error').style.display = 'none';
+    setTimeout(() => document.getElementById('img-lock-input').focus(), 50);
+  }
+}
+
+function checkImgLock() {
+  const val = document.getElementById('img-lock-input').value;
+  if (val === IMG_LOCK_PASSWORD) {
+    imgManagerUnlocked = true;
+    sessionStorage.setItem('img_unlocked', '1');
+    closeImgLock();
+    if (pendingUnlockAction) { pendingUnlockAction(); pendingUnlockAction = null; }
+  } else {
+    document.getElementById('img-lock-error').style.display = 'block';
+  }
+}
+
+function closeImgLock() {
+  document.getElementById('img-lock-modal').classList.remove('open');
+}
 
 /* ── 이미지 맵 로드 & 화면 반영 ── */
 async function loadImageMap() {
@@ -1363,35 +1594,10 @@ function applyImageSlots() {
   });
 }
 
-/* ── 잠금 모달 ── */
+/* ── 이미지 관리자 패널 열기/닫기 ── */
 function openImgManager() {
-  if (!imgManagerUnlocked) {
-    document.getElementById('img-lock-modal').classList.add('open');
-    document.getElementById('img-lock-input').value = '';
-    document.getElementById('img-lock-error').style.display = 'none';
-    setTimeout(() => document.getElementById('img-lock-input').focus(), 50);
-  } else {
-    showImgManagerPanel();
-  }
+  requireUnlock(showImgManagerPanel);
 }
-
-function checkImgLock() {
-  const val = document.getElementById('img-lock-input').value;
-  if (val === IMG_LOCK_PASSWORD) {
-    imgManagerUnlocked = true;
-    sessionStorage.setItem('img_unlocked', '1');
-    closeImgLock();
-    showImgManagerPanel();
-  } else {
-    document.getElementById('img-lock-error').style.display = 'block';
-  }
-}
-
-function closeImgLock() {
-  document.getElementById('img-lock-modal').classList.remove('open');
-}
-
-/* ── 패널 열기/닫기 ── */
 function showImgManagerPanel() {
   document.getElementById('img-manager').classList.add('open');
   document.getElementById('img-manager-overlay').classList.add('open');
@@ -1402,12 +1608,12 @@ function closeImgManager() {
   document.getElementById('img-manager-overlay').classList.remove('open');
 }
 
-/* ── 패널 내용 렌더링 ── */
+/* ── 이미지 관리자 패널 내용 렌더링 ── */
 function renderImgManagerBody() {
   const body = document.getElementById('img-manager-body');
 
   if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
-    body.innerHTML = renderGhSetupForm();
+    body.innerHTML = renderGhSetupForm('img-manager-body');
     return;
   }
 
@@ -1420,7 +1626,7 @@ function renderImgManagerBody() {
       <div class="img-slot-list" style="margin-top:14px;">
         ${renderSlotRow({ key: `thumb-all`, label: '(참고) 각 글의 썸네일', desc: '글을 열면 개별적으로 관리할 수 있습니다.' }, true)}
       </div>
-      ${renderGhSettingsLink()}
+      ${renderGhSettingsLink('img-manager-body')}
     `;
     return;
   }
@@ -1438,7 +1644,7 @@ function renderImgManagerBody() {
     <div class="img-slot-list">
       ${slots.map(s => renderSlotRow(s)).join('')}
     </div>
-    ${renderGhSettingsLink()}
+    ${renderGhSettingsLink('img-manager-body')}
   `;
 }
 
@@ -1463,36 +1669,44 @@ function renderSlotRow(slot, disabled = false) {
   `;
 }
 
-function renderGhSettingsLink() {
+function renderGhSettingsLink(targetId) {
   return `<p style="margin-top:16px;text-align:right;">
-    <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm()">⚙️ GitHub 연동 설정</a>
+    <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm('${targetId}')">⚙️ GitHub 연동 설정</a>
   </p>`;
 }
 
-function showGhSetupForm() {
-  document.getElementById('img-manager-body').innerHTML = renderGhSetupForm();
+function showGhSetupForm(targetId) {
+  document.getElementById(targetId).innerHTML = renderGhSetupForm(targetId);
 }
 
-function renderGhSetupForm() {
+function renderGhSetupForm(targetId) {
   const c = ghConfig || {};
   return `
     <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
-      GitHub Pages 저장소 정보를 입력하면, 업로드한 이미지가 저장소에 자동으로 저장되어
+      GitHub 저장소 정보를 입력하면, 업로드한 이미지와 새 글이 저장소에 자동으로 커밋되어
       모든 방문자에게 정상적으로 표시됩니다.<br>
-      토큰은 이 브라우저에만 저장되며 서버로 전송되지 않습니다.
+      토큰은 이 브라우저에만 저장되며 다른 서버로 전송되지 않습니다.
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;">
       <input id="gh-owner" placeholder="GitHub 계정명 (owner)" value="${c.owner || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
       <input id="gh-repo" placeholder="저장소 이름 (repo)" value="${c.repo || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
       <input id="gh-branch" placeholder="브랜치 (기본: main)" value="${c.branch || 'main'}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
       <input id="gh-token" type="password" placeholder="Personal Access Token" value="${c.token || ''}" style="padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;">
-      <button class="btn-upload-img" style="width:100%;padding:10px;" onclick="saveGhConfig()">저장</button>
-      ${ghConfig && ghConfig.token ? `<button class="btn-del-img" style="width:100%;padding:9px;" onclick="renderImgManagerBody()">취소</button>` : ''}
+      <button class="btn-upload-img" style="width:100%;padding:10px;" onclick="saveGhConfig('${targetId}')">저장</button>
+      ${ghConfig && ghConfig.token ? `<button class="btn-del-img" style="width:100%;padding:9px;" onclick="reRenderTarget('${targetId}')">취소</button>` : ''}
     </div>
   `;
 }
 
-function saveGhConfig() {
+function reRenderTarget(targetId) {
+  if (targetId === 'write-manager-body') {
+    renderWriteManagerBody();
+  } else {
+    renderImgManagerBody();
+  }
+}
+
+function saveGhConfig(targetId) {
   const owner  = document.getElementById('gh-owner').value.trim();
   const repo   = document.getElementById('gh-repo').value.trim();
   const branch = document.getElementById('gh-branch').value.trim() || 'main';
@@ -1505,10 +1719,10 @@ function saveGhConfig() {
 
   ghConfig = { owner, repo, branch, token };
   localStorage.setItem('gh_config', JSON.stringify(ghConfig));
-  renderImgManagerBody();
+  reRenderTarget(targetId);
 }
 
-/* ── GitHub API 헬퍼 ── */
+/* ── GitHub API 헬퍼 (이미지 관리자 · 글 작성 공용) ── */
 async function ghApi(path, options = {}) {
   const url = `https://api.github.com/repos/${ghConfig.owner}/${ghConfig.repo}/contents/${path}`;
   return fetch(url, {
@@ -1541,7 +1755,7 @@ function fileToBase64(file) {
   });
 }
 
-/* ── 이미지 업로드 ── */
+/* ── 이미지 업로드 (썸네일/본문 슬롯) ── */
 async function handleSlotUpload(slotKey, inputEl) {
   const file = inputEl.files[0];
   if (!file) return;
@@ -1599,7 +1813,7 @@ async function handleSlotDelete(slotKey) {
 async function saveImageMap() {
   const path = 'image-map.json';
   const sha = await getFileSha(path);
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(imageMap, null, 2))));
+  const content = toBase64Unicode(JSON.stringify(imageMap, null, 2));
   const res = await ghApi(path, {
     method: 'PUT',
     body: JSON.stringify({
@@ -1615,10 +1829,257 @@ async function saveImageMap() {
   }
 }
 
-/* ─────────────────────────────────────────────
-   START
-───────────────────────────────────────────── */
-init();
+/* ═══════════════════════════════════════════════════════════
+   글 작성 관리자 (신규) — 디자인 박스 삽입 · 이미지 삽입 ·
+   posts.js 자동 커밋
+═══════════════════════════════════════════════════════════ */
+
+const POST_TEMPLATES = {
+  intro: `<div class="intro-box" style="margin-bottom:35px;padding:22px 24px;">
+  <p style="margin:0;font-size:15px;font-style:italic;color:#3a4a6a;">
+    "여기에 도입부 인용구(고객이 실제로 물어볼 법한 질문)를 입력하세요."
+  </p>
+  <p style="margin-top:14px;margin-bottom:0;">
+    여기에 도입부 설명을 이어서 작성하세요.
+  </p>
+</div>
+`,
+  standard: `<div class="standard-box" style="margin:20px 0;padding:20px 22px;">
+  <p style="margin:0;line-height:2.0;">
+    💡 <strong>핵심 정리</strong><br><br>
+    여기에 핵심 내용을 정리하세요.
+  </p>
+</div>
+`,
+  case: `<div class="case-box-gold standard-box" style="margin:22px 0;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
+  <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">📌 사례 개요</h3>
+  <p style="margin:0;line-height:2.1;font-size:14px;color:#4a3a00;">
+    상황 : 여기에 상황을 입력하세요<br>
+    기존 허가 : 여기에 입력하세요<br>
+    고민 : 여기에 입력하세요<br>
+    결과 : 여기에 결과를 입력하세요
+  </p>
+</div>
+`,
+  result: `<div class="step-box" style="background:#f0f4ff;border-left:4px solid #16a34a;border-radius:0 8px 8px 0;padding:16px 20px;font-size:14px;color:#2a3a5a;margin:24px 0;line-height:2.1;">
+  ✅ <strong>진행 결과</strong><br>
+  항목1 : 여기에 내용을 입력하세요<br>
+  항목2 : 여기에 내용을 입력하세요
+</div>
+`,
+  faq: `<div class="faq-box" style="margin-top:22px;margin-bottom:36px;">
+  <div class="faq-item">
+    <p class="faq-q">여기에 질문을 입력하세요 (클릭하면 열리고 닫힙니다)</p>
+    <p class="faq-a" style="line-height:2.0;">여기에 답변을 입력하세요.</p>
+  </div>
+</div>
+`,
+  cta: `<div class="cta-box" style="padding:34px 22px;">
+  <p class="cta-title">🏪 여기에 CTA 제목을 입력하세요</p>
+  <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
+  <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
+  <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
+</div>
+`
+};
+
+function openWriteManager() {
+  requireUnlock(showWriteManagerPanel);
+}
+function showWriteManagerPanel() {
+  document.getElementById('write-manager').classList.add('open');
+  document.getElementById('write-manager-overlay').classList.add('open');
+  populateWriteCategorySelect();
+  if (!ghConfig || !ghConfig.token) {
+    renderWriteManagerBody();
+  }
+}
+function closeWriteManager() {
+  document.getElementById('write-manager').classList.remove('open');
+  document.getElementById('write-manager-overlay').classList.remove('open');
+}
+
+function populateWriteCategorySelect() {
+  const sel = document.getElementById('write-category');
+  if (!sel || sel.dataset.filled === '1') return;
+  sel.innerHTML = CATEGORIES.filter(c => c.id !== 0)
+    .map(c => `<option value="${c.id}">${escHtml(c.label)}</option>`).join('');
+  sel.dataset.filled = '1';
+}
+
+function renderWriteManagerBody() {
+  const body = document.getElementById('write-manager-body');
+  if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
+    body.innerHTML = renderGhSetupForm('write-manager-body');
+  }
+  // ghConfig가 있으면 기본 글쓰기 폼(HTML에 이미 존재)을 그대로 사용합니다.
+  // 이 함수는 GitHub 설정 화면 → 취소 시 원래 폼으로 되돌리는 용도로만 필요하지만,
+  // 폼 전체가 index.html에 고정 마크업으로 있으므로 페이지를 새로고침해 복구합니다.
+  else {
+    location.reload();
+  }
+}
+
+/* ── 커서 위치에 템플릿/텍스트 삽입 ── */
+function insertAtCursor(el, text) {
+  const start = el.selectionStart;
+  const end   = el.selectionEnd;
+  el.value = el.value.slice(0, start) + text + el.value.slice(end);
+  el.focus();
+  const newPos = start + text.length;
+  el.selectionStart = el.selectionEnd = newPos;
+}
+
+function insertTemplate(type) {
+  const snippet = POST_TEMPLATES[type];
+  if (!snippet) return;
+  insertAtCursor(document.getElementById('write-body'), snippet);
+}
+
+/* ── 본문 중간 이미지 업로드 → GitHub images/ 저장 → <img> 자동 삽입 ── */
+async function handleBodyImageUpload(inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+  if (!ghConfig || !ghConfig.token) { alert('먼저 GitHub 연동 설정을 완료해주세요.'); return; }
+
+  const btn = document.getElementById('body-img-btn');
+  const originalText = btn.textContent;
+  btn.textContent = '업로드 중...';
+
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+    const fname = `post-img-${Date.now()}.${ext}`;
+    const imgPath = `images/${fname}`;
+    const base64 = await fileToBase64(file);
+
+    const putRes = await ghApi(imgPath, {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `본문 이미지 업로드: ${fname}`,
+        content: base64,
+        branch: ghConfig.branch
+      })
+    });
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || '이미지 업로드 실패');
+    }
+
+    const rawUrl = `https://raw.githubusercontent.com/${ghConfig.owner}/${ghConfig.repo}/${ghConfig.branch}/${imgPath}`;
+    const snippet = `<div style="margin:24px 0;text-align:center;">
+  <img src="${rawUrl}" alt="" style="max-width:100%;border-radius:8px;">
+</div>
+`;
+    insertAtCursor(document.getElementById('write-body'), snippet);
+  } catch (e) {
+    alert('이미지 업로드 중 오류가 발생했습니다.\n' + e.message);
+  } finally {
+    btn.textContent = originalText;
+    inputEl.value = '';
+  }
+}
+
+/* ── 템플릿 리터럴 안전 삽입을 위한 이스케이프 ── */
+function escapeForTemplateLiteral(str) {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/`/g, '\\`')
+    .replace(/\$\{/g, '\\${');
+}
+
+/* ── 발행: posts.js를 GitHub에서 읽어와 새 글을 추가한 뒤 다시 커밋 ── */
+async function publishPost() {
+  if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
+    alert('먼저 GitHub 연동 설정을 완료해주세요.');
+    showGhSetupForm('write-manager-body');
+    return;
+  }
+
+  const category = parseInt(document.getElementById('write-category').value, 10);
+  const title    = document.getElementById('write-title').value.trim();
+  const summary  = document.getElementById('write-summary').value.trim();
+  const tagsRaw  = document.getElementById('write-tags').value.trim();
+  const bodyRaw  = document.getElementById('write-body').value;
+
+  if (!title || !summary || !bodyRaw.trim()) {
+    alert('제목, 요약글, 본문을 모두 입력해주세요.');
+    return;
+  }
+
+  const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
+  const publishBtn = document.getElementById('publish-btn');
+  const originalLabel = publishBtn.textContent;
+  publishBtn.disabled = true;
+  publishBtn.textContent = '발행 중...';
+
+  try {
+    // 1) 저장소의 최신 posts.js 가져오기
+    const res = await ghApi(`posts.js?ref=${ghConfig.branch}`);
+    if (!res.ok) throw new Error('posts.js 파일을 불러오지 못했습니다. (GitHub 설정을 확인해주세요)');
+    const fileData = await res.json();
+    const sha = fileData.sha;
+    const currentContent = fromBase64Unicode(fileData.content);
+
+    // 2) 다음 id 계산
+    const idMatches = [...currentContent.matchAll(/id:\s*(\d+)/g)].map(m => parseInt(m[1], 10));
+    const nextId = idMatches.length ? Math.max(...idMatches) + 1 : 1;
+
+    // 3) 새 글 블록(JS 객체 리터럴) 문자열 생성
+    const today = new Date().toISOString().slice(0, 10);
+    const escapedBody = escapeForTemplateLiteral(bodyRaw);
+
+    const newPostBlock =
+      '  {\n' +
+      '    id: ' + nextId + ',\n' +
+      '    category: ' + category + ',\n' +
+      '    title: ' + JSON.stringify(title) + ',\n' +
+      '    summary: ' + JSON.stringify(summary) + ',\n' +
+      '    date: ' + JSON.stringify(today) + ',\n' +
+      '    tags: ' + JSON.stringify(tags) + ',\n' +
+      '    thumbnail: "",\n' +
+      '    body: `\n' +
+      '${RESPONSIVE_STYLE}\n' +
+      '<article class="post-body">\n' +
+      escapedBody + '\n' +
+      '</article>\n' +
+      '    `\n' +
+      '  },\n';
+
+    // 4) "const POSTS = [" 바로 다음 줄에 삽입 (최신 글이 맨 위로)
+    const marker = 'const POSTS = [';
+    const markerIdx = currentContent.indexOf(marker);
+    if (markerIdx === -1) throw new Error('posts.js에서 POSTS 배열을 찾을 수 없습니다.');
+    let insertAt = currentContent.indexOf('\n', markerIdx + marker.length);
+    if (insertAt === -1) insertAt = markerIdx + marker.length;
+    const updatedContent =
+      currentContent.slice(0, insertAt + 1) +
+      newPostBlock +
+      currentContent.slice(insertAt + 1);
+
+    // 5) GitHub에 posts.js 커밋
+    const putRes = await ghApi('posts.js', {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `새 글 발행: ${title}`,
+        content: toBase64Unicode(updatedContent),
+        branch: ghConfig.branch,
+        sha: sha
+      })
+    });
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || 'posts.js 저장에 실패했습니다.');
+    }
+
+    alert('✅ 발행되었습니다!\n\nGitHub에 새 글이 커밋되었습니다. GitHub Pages 반영까지 1~2분 정도 걸릴 수 있습니다.\n확인을 누르면 페이지를 새로고침합니다.');
+    location.reload();
+
+  } catch (e) {
+    alert('발행 중 오류가 발생했습니다.\n' + e.message);
+    publishBtn.disabled = false;
+    publishBtn.textContent = originalLabel;
+  }
+}
 </script>
 </body>
 </html>
