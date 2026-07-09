@@ -42,6 +42,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
 
+  <!-- Quill WYSIWYG 에디터 -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" />
+
   <style>
     /* ─────────────────────────────────────────
        DESIGN TOKEN
@@ -874,7 +877,7 @@
     }
 
     /* ─────────────────────────────────────────
-       글 작성 패널 (신규)
+       글 작성 패널 (WYSIWYG)
     ───────────────────────────────────────── */
     #write-manager-toggle {
       display: inline-flex;
@@ -910,9 +913,9 @@
       display: none;
       position: fixed;
       top: 0;
-      right: -460px;
-      width: 440px;
-      max-width: 94vw;
+      right: -560px;
+      width: 540px;
+      max-width: 96vw;
       height: 100dvh;
       overflow-y: auto;
       background: #fff;
@@ -947,7 +950,6 @@
     .wm-field input:focus,
     .wm-field select:focus,
     .wm-field textarea:focus { outline: none; border-color: var(--navy); }
-    #write-body { font-family: 'Noto Sans KR', monospace; line-height: 1.6; }
 
     .wm-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
     .tpl-btn {
@@ -977,9 +979,51 @@
       margin-bottom: 14px;
     }
 
+    /* ── Quill 에디터 (네이버 블로그 스타일 툴바) ── */
+    #quill-toolbar.ql-toolbar.ql-snow {
+      border: 1px solid var(--border);
+      border-radius: 8px 8px 0 0;
+      background: #fafbfd;
+      padding: 8px 10px;
+    }
+    #quill-toolbar .ql-picker-label,
+    #quill-toolbar button {
+      border-radius: 4px;
+    }
+    #quill-toolbar button:hover,
+    #quill-toolbar .ql-picker-label:hover {
+      background: #eef2ff;
+    }
+    #quill-editor-wrap {
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+    #quill-editor.ql-container.ql-snow {
+      border: none;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    #quill-editor .ql-editor {
+      min-height: 340px;
+      max-height: 560px;
+      overflow-y: auto;
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--text);
+    }
+    #quill-editor .ql-editor.ql-blank::before {
+      color: #b7bcc7;
+      font-style: normal;
+      font-size: 13px;
+    }
+    /* 에디터 안에서도 디자인 박스가 실제 모습 그대로 보이도록 이 페이지의
+       .intro-box / .standard-box / .cta-box 등 클래스가 그대로 적용됩니다. */
+
     @media (max-width: 768px) {
       #write-manager-toggle { right: 12px; bottom: 132px; padding: 9px 14px; font-size: 12px; }
       #write-manager { width: 100%; max-width: 100%; }
+      #quill-editor .ql-editor { min-height: 260px; }
     }
   </style>
 </head>
@@ -1095,7 +1139,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════
-     글 작성 관리자 (토글 버튼 · 패널) — 신규
+     글 작성 관리자 (WYSIWYG 에디터)
 ═══════════════════════════════════════════ -->
 <button id="write-manager-toggle" onclick="openWriteManager()">✍️ 글 작성</button>
 
@@ -1107,59 +1151,92 @@
   </div>
 
   <div id="write-manager-body">
-    <div class="wm-notice">
-      아래 내용을 입력하고 <strong>발행하기</strong>를 누르면, 저장소의 <code>posts.js</code>
-      맨 앞에 새 글이 자동으로 추가되어 GitHub에 커밋됩니다. 반영까지 1~2분 정도 걸릴 수 있습니다.
-    </div>
-
-    <div class="wm-field">
-      <label>카테고리</label>
-      <select id="write-category"></select>
-    </div>
-
-    <div class="wm-field">
-      <label>제목</label>
-      <input type="text" id="write-title" placeholder="글 제목을 입력하세요">
-    </div>
-
-    <div class="wm-field">
-      <label>요약글 (목록에 표시)</label>
-      <textarea id="write-summary" rows="2" placeholder="목록 화면에 보여줄 요약글을 입력하세요"></textarea>
-    </div>
-
-    <div class="wm-field">
-      <label>태그 (쉼표로 구분)</label>
-      <input type="text" id="write-tags" placeholder="예: 식품허가, HACCP, 지엘행정사사무소">
-    </div>
-
-    <div class="wm-field">
-      <label>본문 디자인 박스 삽입 · 이미지 삽입</label>
-      <div class="wm-toolbar">
-        <button type="button" class="tpl-btn" onclick="insertTemplate('intro')">🔷 도입부 박스</button>
-        <button type="button" class="tpl-btn" onclick="insertTemplate('standard')">💡 핵심 정리 박스</button>
-        <button type="button" class="tpl-btn" onclick="insertTemplate('case')">📌 사례 개요 박스</button>
-        <button type="button" class="tpl-btn" onclick="insertTemplate('result')">✅ 진행 결과 박스</button>
-        <button type="button" class="tpl-btn" onclick="insertTemplate('faq')">🙋 FAQ 박스</button>
-        <button type="button" class="tpl-btn" onclick="insertTemplate('cta')">📣 CTA 배너</button>
-        <label class="tpl-btn" id="body-img-btn" style="cursor:pointer;">
-          🖼️ 이미지 삽입
-          <input type="file" accept="image/*" id="write-img-input" style="display:none" onchange="handleBodyImageUpload(this)">
-        </label>
+    <!-- ghConfig가 없으면 이 영역이 GitHub 설정 폼으로 교체됩니다 -->
+    <div id="write-form-default">
+      <div class="wm-notice">
+        네이버 블로그처럼 코드 없이 마우스로 바로 글을 작성하세요. 아래 <strong>발행하기</strong>를 누르면
+        본문이 자동으로 가독성 좋은 HTML(문단 줄간격 2.0, 여백 정리, 이미지 대체 텍스트 구조)로
+        변환되어 저장소의 <code>posts.js</code>에 자동 커밋됩니다. 반영까지 1~2분 정도 걸릴 수 있습니다.
       </div>
+
+      <div class="wm-field">
+        <label>카테고리</label>
+        <select id="write-category"></select>
+      </div>
+
+      <div class="wm-field">
+        <label>제목</label>
+        <input type="text" id="write-title" placeholder="글 제목을 입력하세요">
+      </div>
+
+      <div class="wm-field">
+        <label>요약글 (목록에 표시)</label>
+        <textarea id="write-summary" rows="2" placeholder="목록 화면에 보여줄 요약글을 입력하세요"></textarea>
+      </div>
+
+      <div class="wm-field">
+        <label>태그 (쉼표로 구분)</label>
+        <input type="text" id="write-tags" placeholder="예: 식품허가, HACCP, 지엘행정사사무소">
+      </div>
+
+      <div class="wm-field">
+        <label>본문 내용 — 마우스로 바로 작성하세요</label>
+        <div class="wm-toolbar">
+          <button type="button" class="tpl-btn" onclick="insertTemplate('intro')">🔷 도입부 박스</button>
+          <button type="button" class="tpl-btn" onclick="insertTemplate('standard')">💡 핵심 정리 박스</button>
+          <button type="button" class="tpl-btn" onclick="insertTemplate('case')">📌 사례 개요 박스</button>
+          <button type="button" class="tpl-btn" onclick="insertTemplate('result')">✅ 진행 결과 박스</button>
+          <button type="button" class="tpl-btn" onclick="insertTemplate('faq')">🙋 FAQ 박스</button>
+          <button type="button" class="tpl-btn" onclick="insertTemplate('cta')">📣 CTA 배너</button>
+          <label class="tpl-btn" id="body-img-btn" style="cursor:pointer;">
+            🖼️ 이미지 삽입
+            <input type="file" accept="image/*" id="write-img-input" style="display:none" onchange="handleBodyImageUpload(this)">
+          </label>
+        </div>
+
+        <!-- 네이버 블로그형 한글 툴바 (Bold/밑줄/글자색/글자크기/정렬) -->
+        <div id="quill-toolbar">
+          <span class="ql-formats">
+            <button class="ql-bold" title="굵게"></button>
+            <button class="ql-underline" title="밑줄"></button>
+          </span>
+          <span class="ql-formats">
+            <select class="ql-size" title="글자크기">
+              <option value="14px">작게</option>
+              <option value="15px" selected>보통</option>
+              <option value="17px">크게</option>
+              <option value="19px">아주 크게</option>
+            </select>
+          </span>
+          <span class="ql-formats">
+            <select class="ql-color" title="글자색"></select>
+          </span>
+          <span class="ql-formats">
+            <select class="ql-align" title="정렬">
+              <option selected>왼쪽정렬</option>
+              <option value="center">가운데정렬</option>
+              <option value="right">오른쪽정렬</option>
+              <option value="justify">양쪽정렬</option>
+            </select>
+          </span>
+          <span class="ql-formats">
+            <button class="ql-header" value="2" title="큰제목"></button>
+            <button class="ql-header" value="3" title="작은제목"></button>
+          </span>
+        </div>
+        <div id="quill-editor-wrap">
+          <div id="quill-editor"></div>
+        </div>
+      </div>
+
+      <button id="publish-btn" class="btn-upload-img" style="width:100%;padding:12px;font-size:14px;" onclick="publishPost()">
+        🚀 발행하기 (GitHub 자동 커밋)
+      </button>
+
+      <p style="margin-top:16px;text-align:right;">
+        <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm('write-manager-body')">⚙️ GitHub 연동 설정</a>
+      </p>
     </div>
-
-    <div class="wm-field">
-      <label>본문 내용 (HTML)</label>
-      <textarea id="write-body" rows="16" placeholder="본문을 작성하거나 위 버튼으로 디자인 박스를 커서 위치에 삽입하세요"></textarea>
-    </div>
-
-    <button id="publish-btn" class="btn-upload-img" style="width:100%;padding:12px;font-size:14px;" onclick="publishPost()">
-      🚀 발행하기 (GitHub 자동 커밋)
-    </button>
-
-    <p style="margin-top:16px;text-align:right;">
-      <a style="font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;" onclick="showGhSetupForm('write-manager-body')">⚙️ GitHub 연동 설정</a>
-    </p>
   </div>
 </div>
 
@@ -1185,6 +1262,10 @@
      매 방문 시 캐시를 우회해 항상 최신 버전을 불러옵니다. */
   document.write('<script src="posts.js?t=' + Date.now() + '"><' + '/script>');
 </script>
+
+<!-- Quill WYSIWYG 에디터 라이브러리 -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
 <script>
 /* ─────────────────────────────────────────────
    STATE
@@ -1233,9 +1314,14 @@ function init() {
   document.addEventListener('click', (e) => {
     const q = e.target.closest('.faq-q');
     if (!q) return;
+    // 글 작성 에디터 내부에서는 아코디언 토글 대신 바로 텍스트 편집이 가능하도록 둡니다.
+    if (q.closest('#quill-editor')) return;
     const item = q.closest('.faq-item');
     if (item) item.classList.toggle('faq-open');
   });
+
+  // Quill 에디터는 기본 폼이 페이지에 존재하는 즉시 초기화합니다.
+  initQuillEditor();
 }
 
 /* ─────────────────────────────────────────────
@@ -1830,10 +1916,40 @@ async function saveImageMap() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   글 작성 관리자 (신규) — 디자인 박스 삽입 · 이미지 삽입 ·
-   posts.js 자동 커밋
+   글 작성 관리자 — WYSIWYG(Quill) 에디터
+   · 디자인 박스 삽입 · 이미지 삽입(대체 텍스트 포함)
+   · 발행 시 자동으로 가독성/구조 최적화 HTML로 변환 후 posts.js 커밋
 ═══════════════════════════════════════════════════════════ */
 
+let quillEditor = null;
+
+/* ── Quill 초기화: 굵게/밑줄/글자색/글자크기/정렬을 "인라인 스타일"로
+      저장하도록 style 기반 Attributor를 등록합니다.
+      → 이렇게 해야 발행된 글이 Quill 없이도(정적 posts.js 안에서도)
+        동일한 모습으로 보입니다. ── */
+function initQuillEditor() {
+  if (quillEditor || typeof Quill === 'undefined') return;
+  const editorEl = document.getElementById('quill-editor');
+  if (!editorEl) return;
+
+  const SizeStyle = Quill.import('attributors/style/size');
+  SizeStyle.whitelist = ['14px', '15px', '17px', '19px'];
+  Quill.register(SizeStyle, true);
+
+  const AlignStyle = Quill.import('attributors/style/align');
+  Quill.register(AlignStyle, true);
+
+  const ColorStyle = Quill.import('attributors/style/color');
+  Quill.register(ColorStyle, true);
+
+  quillEditor = new Quill('#quill-editor', {
+    theme: 'snow',
+    modules: { toolbar: '#quill-toolbar' },
+    placeholder: '여기에 자연어로 글을 작성하세요. 첫 문단에 핵심 답변을 먼저 적어주시면 검색/AI 노출에 유리합니다.'
+  });
+}
+
+/* ── 디자인 박스 6종 (커서 위치에 실제 렌더링된 모습으로 삽입, 텍스트만 클릭해서 수정) ── */
 const POST_TEMPLATES = {
   intro: `<div class="intro-box" style="margin-bottom:35px;padding:22px 24px;">
   <p style="margin:0;font-size:15px;font-style:italic;color:#3a4a6a;">
@@ -1842,15 +1958,13 @@ const POST_TEMPLATES = {
   <p style="margin-top:14px;margin-bottom:0;">
     여기에 도입부 설명을 이어서 작성하세요.
   </p>
-</div>
-`,
+</div><p><br></p>`,
   standard: `<div class="standard-box" style="margin:20px 0;padding:20px 22px;">
   <p style="margin:0;line-height:2.0;">
     💡 <strong>핵심 정리</strong><br><br>
     여기에 핵심 내용을 정리하세요.
   </p>
-</div>
-`,
+</div><p><br></p>`,
   case: `<div class="case-box-gold standard-box" style="margin:22px 0;background:#fffbf0;border:1px solid #c8a951;padding:20px 22px;">
   <h3 style="color:#8a6400;border-left-color:#c8a951;margin-top:0;margin-bottom:12px;">📌 사례 개요</h3>
   <p style="margin:0;line-height:2.1;font-size:14px;color:#4a3a00;">
@@ -1859,28 +1973,24 @@ const POST_TEMPLATES = {
     고민 : 여기에 입력하세요<br>
     결과 : 여기에 결과를 입력하세요
   </p>
-</div>
-`,
+</div><p><br></p>`,
   result: `<div class="step-box" style="background:#f0f4ff;border-left:4px solid #16a34a;border-radius:0 8px 8px 0;padding:16px 20px;font-size:14px;color:#2a3a5a;margin:24px 0;line-height:2.1;">
   ✅ <strong>진행 결과</strong><br>
   항목1 : 여기에 내용을 입력하세요<br>
   항목2 : 여기에 내용을 입력하세요
-</div>
-`,
+</div><p><br></p>`,
   faq: `<div class="faq-box" style="margin-top:22px;margin-bottom:36px;">
   <div class="faq-item">
-    <p class="faq-q">여기에 질문을 입력하세요 (클릭하면 열리고 닫힙니다)</p>
+    <p class="faq-q">여기에 질문을 입력하세요</p>
     <p class="faq-a" style="line-height:2.0;">여기에 답변을 입력하세요.</p>
   </div>
-</div>
-`,
+</div><p><br></p>`,
   cta: `<div class="cta-box" style="padding:34px 22px;">
   <p class="cta-title">🏪 여기에 CTA 제목을 입력하세요</p>
   <p>식품·축산물 가공업 인허가와 HACCP인증 팀 | 대표 김대운 행정사</p>
   <a href="tel:010-3538-3098" class="cta-btn">📞 010-3538-3098 직통 상담</a>
   <a href="http://gladmin.co.kr" target="_blank" rel="noopener" class="cta-btn cta-btn-outline">🌐 공식 홈페이지 이동</a>
-</div>
-`
+</div><p><br></p>`
 };
 
 function openWriteManager() {
@@ -1892,6 +2002,8 @@ function showWriteManagerPanel() {
   populateWriteCategorySelect();
   if (!ghConfig || !ghConfig.token) {
     renderWriteManagerBody();
+  } else {
+    initQuillEditor();
   }
 }
 function closeWriteManager() {
@@ -1907,40 +2019,38 @@ function populateWriteCategorySelect() {
   sel.dataset.filled = '1';
 }
 
+/* GitHub 설정이 안 되어 있을 때는 설정 폼으로 교체되고, 설정 후에는
+   원래의 에디터 폼(정적 마크업)을 되살리기 위해 새로고침합니다. */
 function renderWriteManagerBody() {
   const body = document.getElementById('write-manager-body');
   if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
     body.innerHTML = renderGhSetupForm('write-manager-body');
-  }
-  // ghConfig가 있으면 기본 글쓰기 폼(HTML에 이미 존재)을 그대로 사용합니다.
-  // 이 함수는 GitHub 설정 화면 → 취소 시 원래 폼으로 되돌리는 용도로만 필요하지만,
-  // 폼 전체가 index.html에 고정 마크업으로 있으므로 페이지를 새로고침해 복구합니다.
-  else {
+  } else {
     location.reload();
   }
 }
 
-/* ── 커서 위치에 템플릿/텍스트 삽입 ── */
-function insertAtCursor(el, text) {
-  const start = el.selectionStart;
-  const end   = el.selectionEnd;
-  el.value = el.value.slice(0, start) + text + el.value.slice(end);
-  el.focus();
-  const newPos = start + text.length;
-  el.selectionStart = el.selectionEnd = newPos;
-}
-
+/* ── 커서 위치에 템플릿 HTML 삽입 (Quill 클립보드 API 사용) ── */
 function insertTemplate(type) {
+  if (!quillEditor) initQuillEditor();
   const snippet = POST_TEMPLATES[type];
-  if (!snippet) return;
-  insertAtCursor(document.getElementById('write-body'), snippet);
+  if (!snippet || !quillEditor) return;
+  const range = quillEditor.getSelection(true) || { index: quillEditor.getLength(), length: 0 };
+  quillEditor.clipboard.dangerouslyPasteHTML(range.index, snippet, 'user');
 }
 
-/* ── 본문 중간 이미지 업로드 → GitHub images/ 저장 → <img> 자동 삽입 ── */
+/* ── 본문 중간 이미지 업로드 → GitHub images/ 저장 → 대체 텍스트 포함 <img> 자동 삽입 ── */
 async function handleBodyImageUpload(inputEl) {
   const file = inputEl.files[0];
   if (!file) return;
-  if (!ghConfig || !ghConfig.token) { alert('먼저 GitHub 연동 설정을 완료해주세요.'); return; }
+  if (!ghConfig || !ghConfig.token) { alert('먼저 GitHub 연동 설정을 완료해주세요.'); inputEl.value=''; return; }
+  if (!quillEditor) initQuillEditor();
+
+  const altText = prompt(
+    '이 이미지를 설명하는 대체 텍스트(alt)를 입력하세요.\n예) "식품제조가공업 영업등록증 사진"\n검색엔진/AI가 이미지를 이해하는 데 사용되어 노출에 도움이 됩니다.',
+    ''
+  );
+  if (altText === null) { inputEl.value=''; return; } // 사용자가 취소함
 
   const btn = document.getElementById('body-img-btn');
   const originalText = btn.textContent;
@@ -1966,11 +2076,14 @@ async function handleBodyImageUpload(inputEl) {
     }
 
     const rawUrl = `https://raw.githubusercontent.com/${ghConfig.owner}/${ghConfig.repo}/${ghConfig.branch}/${imgPath}`;
-    const snippet = `<div style="margin:24px 0;text-align:center;">
-  <img src="${rawUrl}" alt="" style="max-width:100%;border-radius:8px;">
-</div>
-`;
-    insertAtCursor(document.getElementById('write-body'), snippet);
+    const safeAlt = escHtml(altText.trim());
+    const snippet =
+      `<div style="margin:24px 0;text-align:center;">` +
+        `<img src="${rawUrl}" alt="${safeAlt}" style="max-width:100%;border-radius:8px;">` +
+      `</div><p><br></p>`;
+
+    const range = quillEditor.getSelection(true) || { index: quillEditor.getLength(), length: 0 };
+    quillEditor.clipboard.dangerouslyPasteHTML(range.index, snippet, 'user');
   } catch (e) {
     alert('이미지 업로드 중 오류가 발생했습니다.\n' + e.message);
   } finally {
@@ -1987,6 +2100,55 @@ function escapeForTemplateLiteral(str) {
     .replace(/\$\{/g, '\\${');
 }
 
+/* ── 발행 전 자동 후처리: 가독성 + 크롤러 친화 구조로 정리 ──
+   · 스타일이 지정되지 않은 <p>에 줄간격 2.0 / 문단 여백을 적용
+   · 대체 텍스트가 있는 이미지를 <figure><img><figcaption> 구조로 감싸,
+     크롤러가 이미지-설명 연결을 쉽게 파악하도록 함
+   · 빈 문단(Quill의 <p><br></p>)은 정리
+   ⚠ "네이버 공식 GEO 프레임워크"라는 이름의 표준은 확인되지 않아,
+      업계에서 공통적으로 권장하는 구조적 요소(문단 가독성 · 사실 중심 서술 ·
+      이미지 대체 텍스트)만 기계적으로 적용합니다. 첫 문단에 핵심 답변을
+      배치하는 것은 내용의 문제라 자동화가 어려우니, 작성 시 직접 신경 써주세요. */
+function postProcessHtml(rawHtml) {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = rawHtml;
+
+  // 1) 스타일 없는 <p>에 가독성 스타일 부여
+  wrapper.querySelectorAll('p').forEach(p => {
+    const isEmpty = p.innerHTML.trim() === '' || p.innerHTML.trim() === '<br>';
+    if (isEmpty) {
+      // 빈 문단은 문단 간 여백용으로만 남기고 최소화
+      p.style.margin = '0 0 6px';
+      return;
+    }
+    if (!p.getAttribute('style')) {
+      p.setAttribute('style', 'margin:0 0 14px;line-height:2.0;');
+    }
+  });
+
+  // 2) 이미지 → figure/figcaption 구조 (대체 텍스트를 화면에도 살짝 노출해 크롤러 친화적으로)
+  wrapper.querySelectorAll('img').forEach(img => {
+    if (img.closest('figure')) return;
+    const alt = (img.getAttribute('alt') || '').trim();
+    if (!img.style.maxWidth) img.style.maxWidth = '100%';
+    if (!img.style.borderRadius) img.style.borderRadius = '8px';
+
+    const figure = document.createElement('figure');
+    figure.style.cssText = 'margin:24px 0;text-align:center;';
+    img.parentNode.insertBefore(figure, img);
+    figure.appendChild(img);
+
+    if (alt) {
+      const cap = document.createElement('figcaption');
+      cap.textContent = alt;
+      cap.style.cssText = 'font-size:12px;color:#6b7280;margin-top:6px;';
+      figure.appendChild(cap);
+    }
+  });
+
+  return wrapper.innerHTML;
+}
+
 /* ── 발행: posts.js를 GitHub에서 읽어와 새 글을 추가한 뒤 다시 커밋 ── */
 async function publishPost() {
   if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
@@ -1994,18 +2156,21 @@ async function publishPost() {
     showGhSetupForm('write-manager-body');
     return;
   }
+  if (!quillEditor) initQuillEditor();
 
   const category = parseInt(document.getElementById('write-category').value, 10);
   const title    = document.getElementById('write-title').value.trim();
   const summary  = document.getElementById('write-summary').value.trim();
   const tagsRaw  = document.getElementById('write-tags').value.trim();
-  const bodyRaw  = document.getElementById('write-body').value;
+  const editorHtml = quillEditor ? quillEditor.root.innerHTML : '';
+  const editorText  = quillEditor ? quillEditor.getText().trim() : '';
 
-  if (!title || !summary || !bodyRaw.trim()) {
+  if (!title || !summary || !editorText) {
     alert('제목, 요약글, 본문을 모두 입력해주세요.');
     return;
   }
 
+  const bodyRaw = postProcessHtml(editorHtml);
   const tags = tagsRaw.split(',').map(t => t.trim()).filter(Boolean);
   const publishBtn = document.getElementById('publish-btn');
   const originalLabel = publishBtn.textContent;
@@ -2080,6 +2245,8 @@ async function publishPost() {
     publishBtn.textContent = originalLabel;
   }
 }
+
+init();
 </script>
 </body>
 </html>
