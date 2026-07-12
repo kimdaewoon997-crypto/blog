@@ -2356,6 +2356,170 @@ async function publishPost() {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   글 관리(삭제) — POSTS 목록 표시 · 확인 후 posts.js에서
+   해당 글 객체만 안전하게 제거하여 GitHub에 커밋
+═══════════════════════════════════════════════════════════ */
+
+function openPostManager() {
+  requireUnlock(showPostManagerPanel);
+}
+function showPostManagerPanel() {
+  document.getElementById('post-manager').classList.add('open');
+  document.getElementById('post-manager-overlay').classList.add('open');
+  renderPostManagerBody();
+}
+function closePostManager() {
+  document.getElementById('post-manager').classList.remove('open');
+  document.getElementById('post-manager-overlay').classList.remove('open');
+}
+
+function renderPostManagerBody() {
+  const body = document.getElementById('post-manager-body');
+
+  if (!ghConfig || !ghConfig.token || !ghConfig.owner || !ghConfig.repo) {
+    body.innerHTML = renderGhSetupForm('post-manager-body');
+    return;
+  }
+
+  if (!POSTS || POSTS.length === 0) {
+    body.innerHTML = `<p style="font-size:13px;color:var(--muted);">등록된 글이 없습니다.</p>`;
+    return;
+  }
+
+  const sorted = [...POSTS].sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  body.innerHTML = `
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+      총 ${POSTS.length}개의 글이 있습니다. 삭제는 되돌릴 수 없습니다.
+    </p>
+    <div class="pm-post-list">
+      ${sorted.map(p => {
+        const catLabel = CATEGORIES.find(c => c.id === p.category)?.label || '';
+        return `
+        <div class="pm-post-item" id="pm-item-${p.id}">
+          <div class="pm-post-info">
+            <div class="pm-post-title">${escHtml(p.title)}</div>
+            <div class="pm-post-meta"><span class="pm-post-cat">${escHtml(catLabel)}</span>${p.date}</div>
+          </div>
+          <button class="btn-delete-post" onclick="confirmDeletePost(${p.id})">삭제</button>
+        </div>`;
+      }).join('')}
+    </div>
+    ${renderGhSettingsLink('post-manager-body')}
+  `;
+}
+
+function confirmDeletePost(postId) {
+  const post = POSTS.find(p => p.id === postId);
+  if (!post) return;
+  const ok = confirm(`정말 이 글을 삭제하시겠습니까?\n\n"${post.title}"\n\n이 작업은 되돌릴 수 없으며, 저장소(posts.js)에서도 즉시 제거됩니다.`);
+  if (!ok) return;
+  deletePostFromRepo(postId);
+}
+
+/* posts.js 원문에서 해당 id의 글 객체 하나만 깨끗하게 잘라내는 스캐너.
+   따옴표(' " `)와 주석(//, 블록주석) 내부의 문자는 구조로 취급하지 않도록
+   상태를 추적하며, 중괄호 깊이를 맞춰가며 글 객체의 시작과 끝을 찾습니다.
+   CATEGORIES 배열도 동일하게 "id: N" 필드를 쓰기 때문에, 반드시
+   "const POSTS = [" 이후 구간만 스캔해서 카테고리 id와 글 id가
+   우연히 같을 때 엉뚱한 항목이 지워지는 것을 방지합니다. */
+function removePostBlockFromSource(source, targetId) {
+  const marker = 'id: ' + targetId + ',';
+
+  const arrMarker = 'const POSTS = [';
+  const arrStart = source.indexOf(arrMarker);
+  if (arrStart === -1) return null;
+
+  let i = arrStart + arrMarker.length;
+  const len = source.length;
+  let mode = 'code'; // code | squote | dquote | template | linecomment | blockcomment
+  let stack = [];
+  let objStart = null, objEnd = null;
+
+  while (i < len) {
+    const ch = source[i];
+
+    if (mode === 'code') {
+      if (ch === '/' && source[i + 1] === '/') { mode = 'linecomment'; i += 2; continue; }
+      if (ch === '/' && source[i + 1] === '*') { mode = 'blockcomment'; i += 2; continue; }
+      if (ch === "'") { mode = 'squote'; i++; continue; }
+      if (ch === '"') { mode = 'dquote'; i++; continue; }
+      if (ch === '`') { mode = 'template'; i++; continue; }
+      if (ch === '{') { stack.push(i); i++; continue; }
+      if (ch === '}') {
+        const openIdx = stack.pop();
+        if (objStart !== null && openIdx === objStart) { objEnd = i; break; }
+        i++; continue;
+      }
+      if (objStart === null && source.startsWith(marker, i)) {
+        objStart = stack[stack.length - 1];
+      }
+      i++; continue;
+    }
+
+    if (mode === 'linecomment') { if (ch === '\n') mode = 'code'; i++; continue; }
+    if (mode === 'blockcomment') { if (ch === '*' && source[i + 1] === '/') { mode = 'code'; i += 2; continue; } i++; continue; }
+    if (mode === 'squote') { if (ch === '\\') { i += 2; continue; } if (ch === "'") mode = 'code'; i++; continue; }
+    if (mode === 'dquote') { if (ch === '\\') { i += 2; continue; } if (ch === '"') mode = 'code'; i++; continue; }
+    if (mode === 'template') { if (ch === '\\') { i += 2; continue; } if (ch === '`') mode = 'code'; i++; continue; }
+  }
+
+  if (objStart === null || objEnd === null) return null;
+
+  let start = objStart;
+  const lineStart = source.lastIndexOf('\n', start) + 1;
+  if (/^\s*$/.test(source.slice(lineStart, start))) start = lineStart;
+
+  let end = objEnd + 1;
+  if (source[end] === ',') end++;
+  if (source[end] === '\n') end++;
+
+  return source.slice(0, start) + source.slice(end);
+}
+
+async function deletePostFromRepo(postId) {
+  const itemEl = document.getElementById(`pm-item-${postId}`);
+  const btn = itemEl ? itemEl.querySelector('.btn-delete-post') : null;
+  if (btn) { btn.disabled = true; btn.textContent = '삭제 중...'; }
+
+  try {
+    // 1) 저장소의 최신 posts.js 가져오기
+    const res = await ghApi(`posts.js?ref=${ghConfig.branch}`);
+    if (!res.ok) throw new Error('posts.js 파일을 불러오지 못했습니다. (GitHub 설정을 확인해주세요)');
+    const fileData = await res.json();
+    const sha = fileData.sha;
+    const currentContent = fromBase64Unicode(fileData.content);
+
+    // 2) 해당 글 객체만 제거
+    const updatedContent = removePostBlockFromSource(currentContent, postId);
+    if (!updatedContent) throw new Error('posts.js에서 해당 글을 찾지 못했습니다. 이미 삭제되었을 수 있습니다.');
+
+    // 3) GitHub에 posts.js 커밋
+    const post = POSTS.find(p => p.id === postId);
+    const putRes = await ghApi('posts.js', {
+      method: 'PUT',
+      body: JSON.stringify({
+        message: `글 삭제: ${post ? post.title : ('id ' + postId)}`,
+        content: toBase64Unicode(updatedContent),
+        branch: ghConfig.branch,
+        sha: sha
+      })
+    });
+    if (!putRes.ok) {
+      const errData = await putRes.json().catch(() => ({}));
+      throw new Error(errData.message || 'posts.js 저장에 실패했습니다.');
+    }
+
+    alert('✅ 삭제되었습니다.\n\nGitHub Pages 반영까지 1~2분 정도 걸릴 수 있습니다.\n확인을 누르면 페이지를 새로고침합니다.');
+    location.reload();
+
+  } catch (e) {
+    alert('삭제 중 오류가 발생했습니다.\n' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = '삭제'; }
+  }
+}
+
 init();
 </script>
 </body>
